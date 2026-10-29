@@ -1,0 +1,1087 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>우리반 퀘스트보드</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: 길드 게시판 — 왼쪽 메뉴 레일 + 넓은 작업 화면, 학생은 캐릭터 카드 격자 */
+:root{
+  --bg:#edf1f8; --panel:#ffffff; --sunk:#e3e9f4; --ink:#1b2342; --muted:#5a6486; --line:#d4dbea;
+  --accent:#c9820a; --accent-soft:#fff1d2; --accent-ink:#ffffff;
+  --exp:#2f63d8; --exp-soft:#dfe8ff; --good:#16895c; --good-soft:#d9f3e7; --bad:#cc3d3d; --bad-soft:#fde3e3;
+  --g1:#6b7489; --g2:#1f8a57; --g3:#2d6fd6; --g4:#8448c9; --g5:#d06a0c;
+  --night:#202a52; --night-ink:#f3f5ff;
+  --f-display:"Jua","Gowun Dodum",system-ui,sans-serif;
+  --f-body:"Gowun Dodum","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --r:12px; --shadow:0 1px 0 var(--line),0 6px 18px -12px rgba(20,30,70,.35);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1328; --panel:#171d38; --sunk:#111631; --ink:#e7ebfb; --muted:#9aa3c6; --line:#29315a;
+  --accent:#f0b03c; --accent-soft:#3a2f17; --accent-ink:#1b1405;
+  --exp:#7499ff; --exp-soft:#1d2a57; --good:#3cc88e; --good-soft:#123528; --bad:#ff7171; --bad-soft:#3d1a1d;
+  --g1:#9aa3b8; --g2:#46c788; --g3:#6c9cff; --g4:#b48af0; --g5:#f29a4a;
+  --night:#0a0e22; --night-ink:#f3f5ff; color-scheme:dark;
+  --shadow:0 1px 0 var(--line),0 8px 20px -14px rgba(0,0,0,.8);
+}}
+:root[data-theme="dark"]{
+  --bg:#0f1328; --panel:#171d38; --sunk:#111631; --ink:#e7ebfb; --muted:#9aa3c6; --line:#29315a;
+  --accent:#f0b03c; --accent-soft:#3a2f17; --accent-ink:#1b1405;
+  --exp:#7499ff; --exp-soft:#1d2a57; --good:#3cc88e; --good-soft:#123528; --bad:#ff7171; --bad-soft:#3d1a1d;
+  --g1:#9aa3b8; --g2:#46c788; --g3:#6c9cff; --g4:#b48af0; --g5:#f29a4a;
+  --night:#0a0e22; --night-ink:#f3f5ff; color-scheme:dark;
+  --shadow:0 1px 0 var(--line),0 8px 20px -14px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.55}
+h1,h2,h3,h4{font-family:var(--f-display);font-weight:400;margin:0;text-wrap:balance;letter-spacing:.01em}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--exp);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* top bar */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--night);color:var(--night-ink);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+.brand{display:flex;align-items:center;gap:10px;min-width:0}
+.brand .crest{width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-family:var(--f-display);font-size:18px}
+.brand h1{font-size:21px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand small{display:block;font-size:12px;opacity:.7;font-family:var(--f-body)}
+.top .spacer{flex:1}
+.sync{font-size:12px;padding:4px 10px;border-radius:99px;background:rgba(255,255,255,.1);white-space:nowrap}
+.sync::before{content:"●";margin-right:6px;color:#7be0a8}
+.sync.local::before{color:#ffcf6b}
+.sync.saving::before{color:#9cc0ff}
+
+/* shell */
+.shell{display:grid;grid-template-columns:200px minmax(0,1fr);gap:20px;max-width:1360px;margin:0 auto;
+  padding-block:18px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+nav.rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 74px);align-self:start;display:flex;flex-direction:column;gap:2px}
+nav.rail .group{font-size:11px;letter-spacing:.12em;color:var(--muted);padding:12px 12px 4px}
+nav.rail a{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:10px;color:var(--ink);text-decoration:none;font-family:var(--f-display);font-size:16px}
+nav.rail a .ic{width:24px;text-align:center}
+nav.rail a:hover{background:var(--sunk)}
+nav.rail a[aria-current="page"]{background:var(--panel);box-shadow:var(--shadow);color:var(--exp)}
+@media (max-width:860px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  nav.rail{position:static;flex-direction:row;overflow-x:auto;gap:4px;padding-bottom:4px;scrollbar-width:thin}
+  nav.rail .group{display:none}
+  nav.rail a{white-space:nowrap;flex:none;font-size:15px}
+}
+main{min-width:0;display:flex;flex-direction:column;gap:18px}
+
+/* panels */
+.panel{background:var(--panel);border-radius:var(--r);box-shadow:var(--shadow);padding:18px}
+.ph{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.ph h2{font-size:24px}
+.ph p{margin:2px 0 0;color:var(--muted);font-size:14px}
+.ph .actions{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:8px 14px;font-family:var(--f-display);font-size:15px;line-height:1.2;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--sunk)}
+.btn.primary{background:var(--exp);border-color:var(--exp);color:#fff}
+.btn.gold{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{color:var(--bad);border-color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px;border-radius:8px}
+.btn.lg{padding:14px 26px;font-size:20px;border-radius:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.icon-btn{border:0;background:transparent;padding:4px 6px;border-radius:6px;color:var(--muted)}
+.icon-btn:hover{background:var(--sunk);color:var(--ink)}
+.muted{color:var(--muted)}
+.empty{padding:28px;text-align:center;color:var(--muted);border:2px dashed var(--line);border-radius:var(--r)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:99px;padding:5px 12px;font-size:14px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.tag{display:inline-flex;align-items:center;gap:4px;border-radius:6px;padding:1px 7px;font-size:12px;font-family:var(--f-display);white-space:nowrap}
+.tag.exp{background:var(--exp-soft);color:var(--exp)}
+.tag.gold{background:var(--accent-soft);color:var(--accent)}
+.tag.stat{background:var(--good-soft);color:var(--good)}
+.tag.bad{background:var(--bad-soft);color:var(--bad)}
+.tag.plain{background:var(--sunk);color:var(--muted)}
+.grade{color:#fff;border-radius:6px;padding:1px 8px;font-size:12px;font-family:var(--f-display)}
+.subtabs{display:flex;gap:4px;background:var(--sunk);padding:4px;border-radius:12px;width:max-content;max-width:100%;overflow-x:auto;margin-bottom:14px}
+.subtabs button{border:0;background:transparent;padding:7px 14px;border-radius:9px;font-family:var(--f-display);font-size:15px;white-space:nowrap}
+.subtabs button[aria-selected="true"]{background:var(--panel);box-shadow:var(--shadow)}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted)}
+.inp,select.inp,textarea.inp{border:1px solid var(--line);background:var(--panel);border-radius:9px;padding:8px 10px;color:var(--ink);font-size:15px;width:100%;min-width:0}
+textarea.inp{resize:vertical;min-height:70px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.row>*{flex:1 1 140px}
+.grid-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+
+/* notice */
+.notice{background:var(--night);color:var(--night-ink);border-radius:var(--r);padding:18px 20px;display:flex;gap:16px;align-items:center}
+.notice .bell{font-size:30px}
+.notice .msg{flex:1;min-width:0;font-family:var(--f-display);font-size:22px;line-height:1.35;white-space:pre-wrap;word-break:keep-all}
+.notice .msg.placeholder{opacity:.6;font-size:17px}
+.notice .btn{background:transparent;color:var(--night-ink);border-color:rgba(255,255,255,.3)}
+
+/* quest tiles */
+.quests{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.quest{border:1px solid var(--line);border-radius:12px;padding:12px;background:var(--panel);text-align:left;display:flex;flex-direction:column;gap:6px}
+.quest:hover{border-color:var(--exp)}
+.quest .q-top{display:flex;align-items:center;gap:8px;font-family:var(--f-display);font-size:16px}
+.quest .q-top span:first-child{font-size:22px}
+.quest .q-val{font-family:var(--f-display);font-size:24px}
+.quest .q-val small{font-size:14px;color:var(--muted)}
+.bar{height:7px;background:var(--sunk);border-radius:99px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--exp);border-radius:99px}
+.bar.gold>i{background:var(--accent)}
+.bar.good>i{background:var(--good)}
+
+/* student cards */
+.roster{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:12px}
+.hero{border:1px solid var(--line);border-radius:14px;background:var(--panel);padding:12px;text-align:left;display:flex;flex-direction:column;gap:8px;position:relative}
+.hero:hover{border-color:var(--exp);transform:translateY(-1px)}
+.hero .stage{height:96px;border-radius:10px;background:linear-gradient(180deg,var(--exp-soft),var(--sunk));display:grid;place-items:center;font-size:54px;position:relative}
+.hero .lv{position:absolute;left:8px;top:8px;background:var(--night);color:var(--night-ink);font-family:var(--f-display);font-size:13px;border-radius:7px;padding:1px 7px}
+.hero .no{position:absolute;right:8px;top:8px;font-family:var(--f-display);font-size:13px;color:var(--muted)}
+.hero .nm{font-family:var(--f-display);font-size:18px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hero .ttl{font-size:12px;min-height:18px}
+.hero .meta{display:flex;justify-content:space-between;font-size:13px;color:var(--muted)}
+.rank-list{display:flex;flex-direction:column;gap:6px}
+.rank-item{display:grid;grid-template-columns:44px 44px minmax(0,1fr) 90px 90px;gap:10px;align-items:center;padding:8px 12px;border-radius:10px;background:var(--sunk);text-align:left;border:0}
+.rank-item .pos{font-family:var(--f-display);font-size:22px;text-align:center}
+.rank-item .av{font-size:28px;text-align:center}
+@media (max-width:520px){.rank-item{grid-template-columns:34px 34px minmax(0,1fr) 70px}.rank-item .hide-sm{display:none}}
+
+/* cards (praise) */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.pcard{border:1px solid var(--line);border-radius:14px;background:var(--panel);display:flex;flex-direction:column;overflow:hidden}
+.pcard .pc-head{padding:12px 14px 6px;display:flex;gap:10px;align-items:flex-start}
+.pcard .pc-emb{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;font-size:20px;background:var(--accent-soft);flex:none}
+.pcard.warn .pc-emb{background:var(--bad-soft)}
+.pcard h4{font-size:17px;line-height:1.25}
+.pcard .pc-desc{font-size:13px;color:var(--muted);margin-top:2px}
+.pcard .pc-tags{padding:4px 14px 10px;display:flex;gap:4px;flex-wrap:wrap}
+.pcard .pc-foot{margin-top:auto;display:flex;border-top:1px solid var(--line)}
+.pcard .pc-foot button{flex:1;border:0;background:transparent;padding:10px;font-family:var(--f-display);font-size:15px}
+.pcard .pc-foot button.go{background:var(--exp);color:#fff}
+.pcard.warn .pc-foot button.go{background:var(--bad)}
+.pcard .pc-foot button:not(.go):hover{background:var(--sunk)}
+
+/* titles */
+.tlist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.tcard{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel);display:flex;flex-direction:column;gap:8px}
+.tcard .t-name{font-family:var(--f-display);font-size:20px}
+.holders{display:flex;flex-wrap:wrap;gap:4px}
+.holder{background:var(--sunk);border-radius:99px;padding:2px 8px;font-size:12px}
+
+/* missions */
+.mlist{display:flex;flex-direction:column;gap:10px}
+.mission{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--panel);display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:14px;align-items:start}
+.mission .m-ic{width:48px;height:48px;border-radius:12px;background:var(--exp-soft);display:grid;place-items:center;font-size:24px}
+.mission.challenge .m-ic{background:var(--accent-soft)}
+.mission h4{font-size:18px}
+.mission .m-desc{font-size:14px;color:var(--muted);margin:2px 0 8px;white-space:pre-wrap}
+.mission .m-side{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.done-list{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.done-pill{display:inline-flex;align-items:center;gap:4px;background:var(--good-soft);color:var(--good);border-radius:99px;padding:2px 4px 2px 9px;font-size:13px}
+.done-pill button{border:0;background:transparent;color:inherit;padding:0 5px;border-radius:99px}
+@media (max-width:600px){.mission{grid-template-columns:40px minmax(0,1fr)}.mission .m-side{grid-column:1/-1;flex-direction:row;align-items:center;flex-wrap:wrap}}
+
+/* roles */
+.daybar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.daybar .d{font-family:var(--f-display);font-size:20px;min-width:150px;text-align:center}
+.roles{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.role{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--panel)}
+.role-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.role-h h4{font-size:18px;flex:1}
+.member{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px dashed var(--line)}
+.member .mn{flex:1;min-width:0;font-family:var(--f-display)}
+.seg{display:flex;gap:3px}
+.seg button{border:1px solid var(--line);background:var(--panel);border-radius:7px;padding:3px 8px;font-size:13px;font-family:var(--f-display)}
+.seg button[aria-pressed="true"][data-v="done"]{background:var(--exp);color:#fff;border-color:var(--exp)}
+.seg button[aria-pressed="true"][data-v="bonus"]{background:var(--good);color:#fff;border-color:var(--good)}
+.seg button[aria-pressed="true"][data-v="penalty"]{background:var(--bad);color:#fff;border-color:var(--bad)}
+
+/* journal */
+.diary{display:flex;flex-direction:column;gap:8px}
+.drow{display:grid;grid-template-columns:150px auto minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:12px;background:var(--sunk)}
+.drow .who{font-family:var(--f-display);font-size:16px;display:flex;gap:8px;align-items:center;min-width:0}
+.drow .who span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.moods{display:flex;gap:2px;flex-wrap:wrap}
+.moods button{border:2px solid transparent;background:transparent;font-size:22px;border-radius:10px;padding:0 3px;line-height:1.3}
+.moods button[aria-pressed="true"]{border-color:var(--exp);background:var(--panel)}
+.drow.saved{background:var(--good-soft)}
+@media (max-width:760px){.drow{grid-template-columns:minmax(0,1fr) auto}.drow .moods,.drow .inp{grid-column:1/-1}}
+.letters{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.letter{background:var(--accent-soft);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.letter .lt-to{font-family:var(--f-display);font-size:17px}
+.letter .lt-body{white-space:pre-wrap}
+.letter .lt-from{text-align:right;font-family:var(--f-display);color:var(--muted)}
+.mood-summary{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.mood-summary span{background:var(--sunk);border-radius:10px;padding:4px 10px;font-family:var(--f-display)}
+
+/* tools */
+.stage-big{min-height:220px;border-radius:16px;background:var(--night);color:var(--night-ink);display:grid;place-items:center;text-align:center;padding:20px}
+.stage-big .big{font-family:var(--f-display);font-size:clamp(40px,9vw,92px);line-height:1.1}
+.stage-big .sub{opacity:.75;font-size:16px}
+.pick-result{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.pick-result span{font-family:var(--f-display);font-size:clamp(26px,5vw,44px);background:rgba(255,255,255,.1);border-radius:14px;padding:6px 18px}
+.teams{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-top:12px}
+.team{border-radius:14px;padding:12px;background:var(--sunk)}
+.team h4{font-size:19px;margin-bottom:6px}
+.team div{font-family:var(--f-display);font-size:17px;padding:2px 0}
+.timer-digits{font-family:var(--f-display);font-size:clamp(70px,16vw,170px);line-height:1;font-variant-numeric:tabular-nums}
+.timer-digits.over{color:#ff8b8b}
+.wheel-wrap{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:18px;align-items:start}
+@media (max-width:760px){.wheel-wrap{grid-template-columns:minmax(0,1fr)}}
+.wheel-box{position:relative;max-width:440px;width:100%;margin:0 auto}
+.wheel-box canvas{width:100%;height:auto;display:block}
+.wheel-box .pointer{position:absolute;left:50%;top:-6px;transform:translateX(-50%);width:0;height:0;border-left:16px solid transparent;border-right:16px solid transparent;border-top:30px solid var(--bad);filter:drop-shadow(0 2px 2px rgba(0,0,0,.3))}
+.talk{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.talk-card{border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px;align-items:center;background:var(--panel)}
+.talk-card .tc-n{font-family:var(--f-display);font-size:17px}
+.talk-card .tc-s{font-family:var(--f-display);font-size:34px;color:var(--exp)}
+.seats-wrap{overflow-x:auto}
+.board{background:var(--night);color:var(--night-ink);border-radius:10px;text-align:center;padding:8px;font-family:var(--f-display);margin-bottom:12px}
+.seats{display:grid;gap:8px;min-width:max-content}
+.seat{width:104px;height:70px;border:1px solid var(--line);border-radius:10px;background:var(--panel);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--f-display);font-size:15px}
+.seat .sa{font-size:22px;line-height:1}
+.seat.emptyseat{background:var(--sunk);color:var(--muted);border-style:dashed}
+.seat.sel{outline:3px solid var(--accent)}
+
+/* shop & bank */
+.shop{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
+.coupon{border:2px dashed var(--line);border-radius:14px;padding:14px;background:var(--panel);display:flex;flex-direction:column;gap:6px}
+.coupon .cp-emo{font-size:34px}
+.coupon h4{font-size:18px}
+.coupon .price{font-family:var(--f-display);font-size:22px;color:var(--accent)}
+.coupon.off{opacity:.55}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-weight:400;color:var(--muted);font-size:12px;letter-spacing:.06em}
+td.r,th.r{text-align:right}
+.stats4{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:14px}
+.stat-tile{background:var(--sunk);border-radius:12px;padding:12px}
+.stat-tile b{display:block;font-family:var(--f-display);font-weight:400;font-size:24px}
+.stat-tile span{font-size:13px;color:var(--muted)}
+.status{font-size:12px;border-radius:6px;padding:2px 8px;font-family:var(--f-display)}
+.status.run{background:var(--exp-soft);color:var(--exp)}
+.status.ready{background:var(--accent-soft);color:var(--accent)}
+.status.done{background:var(--sunk);color:var(--muted)}
+
+/* log */
+.log{display:flex;flex-direction:column;gap:2px;font-size:14px}
+.log div{display:flex;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line)}
+.log time{color:var(--muted);flex:none;width:92px;font-variant-numeric:tabular-nums}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(10,14,34,.55);z-index:50;display:grid;place-items:center;padding:16px}
+.modal{background:var(--panel);border-radius:16px;width:min(680px,100%);max-height:calc(100vh - 40px);overflow:auto;padding:20px;box-shadow:0 20px 60px -20px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:14px}
+.modal h3{font-size:22px}
+.modal-foot{display:flex;gap:8px;justify-content:flex-end;align-items:center;flex-wrap:wrap;position:sticky;bottom:-20px;background:var(--panel);padding:10px 0 0}
+.modal-foot .grow{margin-right:auto;color:var(--muted);font-size:14px}
+.pick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.pick{border:2px solid var(--line);border-radius:12px;background:var(--panel);padding:8px;display:flex;flex-direction:column;align-items:center;gap:2px;font-family:var(--f-display)}
+.pick .pa{font-size:28px}
+.pick[aria-pressed="true"]{border-color:var(--exp);background:var(--exp-soft)}
+.pick:disabled{opacity:.4}
+.pick small{font-family:var(--f-body);font-size:11px;color:var(--muted)}
+.avatars{display:flex;flex-wrap:wrap;gap:4px}
+.avatars button{font-size:26px;border:2px solid transparent;background:var(--sunk);border-radius:10px;width:46px;height:46px}
+.avatars button[aria-pressed="true"]{border-color:var(--exp)}
+.prof{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;align-items:center}
+.prof .pav{height:110px;border-radius:16px;background:linear-gradient(180deg,var(--exp-soft),var(--sunk));display:grid;place-items:center;font-size:64px}
+.statbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px 18px}
+.statbar{display:grid;grid-template-columns:62px minmax(0,1fr) 30px;gap:8px;align-items:center;font-size:13px}
+.statbar .bar>i{background:var(--good)}
+
+/* toast + celebration */
+.toasts{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:70;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+.toast{background:var(--night);color:var(--night-ink);padding:10px 16px;border-radius:12px;font-size:14px;box-shadow:0 8px 24px -10px rgba(0,0,0,.6);max-width:340px;animation:tin .25s ease-out}
+@keyframes tin{from{transform:translateY(8px);opacity:0}}
+.levelup{position:fixed;inset:0;z-index:80;display:grid;place-items:center;background:rgba(10,14,34,.6);padding:16px}
+.levelup .lu{background:var(--night);color:var(--night-ink);border:3px solid var(--accent);border-radius:22px;padding:28px 34px;text-align:center;animation:pop .45s cubic-bezier(.2,1.6,.4,1)}
+.levelup .lu h3{font-size:44px;color:var(--accent)}
+.levelup .lu p{font-family:var(--f-display);font-size:22px;margin:6px 0 0}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.hero:hover{transform:none}}
+.welcome{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+@media (max-width:700px){.welcome{grid-template-columns:minmax(0,1fr)}}
+.welcome .panel h3{font-size:20px;margin-bottom:6px}
+.hint{font-size:13px;color:var(--muted)}
+</style>
+
+<header class="top">
+  <div class="brand"><div class="crest">퀘</div><div><h1 id="cls-name">우리반 퀘스트보드</h1><small id="today-label"></small></div></div>
+  <div class="spacer"></div>
+  <span class="sync local" id="sync">불러오는 중</span>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="메뉴"></nav>
+  <main id="main"></main>
+</div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<input type="file" id="import-file" accept="application/json,.json" hidden>
+
+<script>
+/* ============ 기본 상수 ============ */
+const STATS=['인성','의사소통','창의력','성실성','지력','체력'];
+const GRADES=[{k:'일반',c:'var(--g1)',r:100},{k:'고급',c:'var(--g2)',r:200},{k:'희귀',c:'var(--g3)',r:300},{k:'영웅',c:'var(--g4)',r:400},{k:'전설',c:'var(--g5)',r:500}];
+const AVATARS=['🧙','🧝','🦸','🥷','🧚','🤴','👸','🧛','🧜','🐉','🦊','🐯','🦁','🐼','🐧','🦄','🐰','🐶','🐱','🐸','🤖','👾','🐻','🦉'];
+const MOODS=[['😄','신나요'],['🙂','좋아요'],['😐','그저그래요'],['😢','슬퍼요'],['😠','화나요'],['😟','걱정돼요'],['😴','피곤해요']];
+const NAV=[
+  {g:'학급'},
+  {id:'home',ic:'🏰',t:'학급 홈'},
+  {id:'praise',ic:'🃏',t:'칭찬·주의 카드'},
+  {id:'titles',ic:'👑',t:'칭호'},
+  {id:'missions',ic:'📜',t:'미션·챌린지'},
+  {id:'roles',ic:'🧹',t:'1인1역'},
+  {id:'journal',ic:'💌',t:'마음일기·감사편지'},
+  {g:'도구'},
+  {id:'tools',ic:'🎲',t:'클래스 툴'},
+  {id:'shop',ic:'🛍️',t:'학급 상점'},
+  {id:'bank',ic:'🏦',t:'학급 은행'},
+  {id:'setup',ic:'⚙️',t:'학생·설정'},
+];
+
+function emptyState(){return{
+  v:1,className:'우리반',notice:'',
+  students:[],cards:[],titles:[],missions:[],roles:[],roleLog:{},
+  roleReward:{done:{exp:20,gold:20},bonus:{exp:50,gold:50},penalty:{exp:-20,gold:-20}},
+  coupons:[],owned:[],bank:{rate:10,days:7,deposits:[]},
+  diary:[],letters:[],questReward:{diary:{exp:30,gold:30},letter:{exp:30,gold:30}},
+  talk:{},talkGold:10,seats:{cols:6,order:[]},log:[]
+}}
+
+/* 기본 세트: 카드·칭호·미션·쿠폰·역할 템플릿 (학생 정보 없음) */
+function starterPreset(){/*PRESET_START*/
+  const id=()=>Math.random().toString(36).slice(2,9);
+  const C=(cat,name,desc,exp,gold,stats,kind)=>({id:id(),kind:kind||'praise',cat,name,desc,exp,gold,stats:stats||{},emoji:kind==='warn'?'⚠️':'⭐'});
+  return{
+    cards:[
+      C('생활','발표 칭찬카드','발표를 잘 한 당신! 칭찬받아라!',100,100,{의사소통:1}),
+      C('생활','양보 칭찬카드','친구를 위해 양보한 당신! 칭찬받아라!',50,50,{의사소통:1}),
+      C('생활','협동카드','어려움을 겪고 있는 친구를 도운 당신! 칭찬받아라!',50,50,{인성:1}),
+      C('생활','선생님 도움 카드','선생님을 도운 당신! 칭찬받아라!',100,100,{인성:1,체력:1}),
+      C('생활','청소왕 카드','자기 자리뿐 아니라 교실의 더러운 곳까지 치워준 당신!',50,50,{인성:1}),
+      C('생활','이동수업 칭찬카드','전담 선생님에게 칭찬받은 당신! 칭찬받아라!',300,300,{인성:1,지력:1}),
+      C('급식','골고루 먹기 칭찬카드','급식을 골고루 다 먹은 당신을 칭찬합니다!',100,100,{체력:1}),
+      C('아침시간','아침 질문 열심히 적기','아침 질문에 성실하게 답을 적었어요.',100,50,{성실성:1}),
+      C('수업','미술 칭찬카드','만들기·색칠·종이접기 활동을 훌륭하게 해냈어요!',100,100,{창의력:1,성실성:1}),
+      C('수업','도전왕 칭찬카드','학급 게임이나 어려운 문제에서 우수한 성적을 거둔 당신!',100,100,{의사소통:1,창의력:1}),
+      C('수업','숙제 잘해오기 카드','숙제를 잘 해왔다!',150,150,{성실성:1}),
+      C('받아쓰기','받아쓰기 100점','받아쓰기 100점을 받았다!',300,300,{의사소통:1,지력:1}),
+      C('받아쓰기','받아쓰기 90점','받아쓰기 90점을 받았다!',200,200,{의사소통:1}),
+      C('받아쓰기','받아쓰기 80점','받아쓰기 80점을 받았다!',100,100,{의사소통:1}),
+      C('쪽지시험','쪽지시험 100점!','쪽지시험 100점!',300,300,{지력:1}),
+      C('게임등수','게임 1등!','1등!',300,300,{}),
+      C('게임등수','게임 2등!','2등!',250,250,{}),
+      C('게임등수','게임 3등!','3등!',200,200,{}),
+      C('생활','수업 방해','수업 시간에 친구들의 공부를 방해했어요.',-50,-50,{},'warn'),
+      C('생활','정리정돈 안 함','자기 자리를 정리하지 않았어요.',-30,-30,{},'warn'),
+      C('생활','바른 말 쓰기','친구에게 바르지 않은 말을 했어요.',-50,-50,{},'warn'),
+      C('수업','숙제 안 해옴','숙제를 해오지 않았어요.',-30,-30,{},'warn'),
+    ],
+    titles:[
+      {id:id(),name:'초보 독서가',grade:'일반',desc:'독서의 세계에 첫발을 내디딘 당신을 위한 칭호',cond:'독서감상문 5개 작성',exp:100,gold:100},
+      {id:id(),name:'중급 독서가',grade:'고급',desc:'책장을 넘기는 게 익숙해진 독서가',cond:'누적 독서감상문 10개',exp:200,gold:200},
+      {id:id(),name:'고급 독서가',grade:'희귀',desc:'다양한 분야의 책을 섭렵한 독서가',cond:'누적 독서감상문 30개',exp:300,gold:300},
+      {id:id(),name:'마스터 독서가',grade:'영웅',desc:'독서의 정점에 선 당신',cond:'누적 독서감상문 50개',exp:400,gold:400},
+      {id:id(),name:'그랜드 마스터 독서가',grade:'전설',desc:'독서의 신이라 불리는 당신',cond:'누적 독서감상문 70개',exp:500,gold:500},
+      {id:id(),name:'발표 꿈나무',grade:'고급',desc:'자주 발표에 도전하는 친구',cond:'3일 연속 하루 한 번 이상 발표',exp:200,gold:200},
+      {id:id(),name:'발표 전문가',grade:'희귀',desc:'논리적이고 자신감 있는 발표 실력자',cond:'매일 발표하며 탁월한 모습',exp:300,gold:300},
+      {id:id(),name:'발표 마스터',grade:'영웅',desc:'학급 분위기를 이끄는 발표 고수',cond:'청중의 호응과 공감을 이끈 발표',exp:400,gold:400},
+      {id:id(),name:'발표의 신',grade:'전설',desc:'모든 발표를 지배하는 전설',cond:'자세·내용·목소리·분위기 모두 완벽',exp:500,gold:500},
+      {id:id(),name:'깔끔한',grade:'희귀',desc:'정리정돈을 잘하고 주변이 깔끔한 당신',cond:'정리정돈과 청소에 열심히 참여',exp:300,gold:300},
+      {id:id(),name:'도서관의 정령',grade:'희귀',desc:'도서관에 대한 사랑이 넘치는 당신',cond:'도서관에 자주 가서 책을 많이 읽음',exp:300,gold:300},
+    ],
+    missions:[
+      {id:id(),type:'mission',emoji:'📖',name:'독서감상문 작성하기',desc:'책을 읽고(만화책 제외) 독서감상문을 제출해요. 책 제목, 고른 이유, 내용, 인상 깊은 장면, 느낀 점, 배운 점이 꼭 들어가야 해요.',diff:'보통',repeat:true,exp:150,gold:150,stats:{지력:1},titleId:null,active:true,done:{}},
+      {id:id(),type:'challenge',emoji:'✏️',name:'동시 따라쓰기 챌린지',desc:'동시 필사 노트 1, 2챕터를 읽고 따라 쓰기. 예쁘게 꾸며 오면 추가 보상!',diff:'보통',repeat:false,exp:1000,gold:1000,stats:{성실성:1},titleId:null,active:true,done:{}},
+      {id:id(),type:'challenge',emoji:'🔬',name:'동시쓰기 2번째 챌린지',desc:'1, 2챕터를 끝낸 사람 중 3, 4챕터까지 끝내기!',diff:'어려움',repeat:false,exp:2000,gold:2000,stats:{성실성:1},titleId:null,active:true,done:{}},
+      {id:id(),type:'challenge',emoji:'👑',name:'동시쓰기 마지막 챌린지',desc:'동시 따라쓰기 한 권을 모두 완성하기!',diff:'어려움',repeat:false,exp:3000,gold:3000,stats:{성실성:1,창의력:1},titleId:null,active:true,done:{}},
+    ],
+    coupons:[
+      {id:id(),emoji:'🌈',name:'뽑기 쿠폰',desc:'몇 등이 나올까?!',price:300,stock:84,active:true},
+      {id:id(),emoji:'🍩',name:'급식 순서 바꾸기',desc:'일주일 동안 급식 먹는 순서 바꾸기',price:3000,stock:97,active:true},
+      {id:id(),emoji:'🍰',name:'간식 꾸러미 쿠폰',desc:'선생님이 준비한 간식 꾸러미',price:3000,stock:3,active:true},
+      {id:id(),emoji:'🎶',name:'자유 시간 쿠폰',desc:'자유 시간 10분',price:10000,stock:10,active:true},
+      {id:id(),emoji:'🌡️',name:'학급 온도계 올리기',desc:'우리 반 목표 온도계 한 칸 올리기',price:1500,stock:null,active:true},
+      {id:id(),emoji:'🥤',name:'과자파티 쿠폰',desc:'학급 과자파티 계획하기',price:30000,stock:5,active:true},
+    ],
+    roles:[
+      {id:id(),emoji:'🧽',name:'칠판 지우기',desc:'쉬는 시간마다 칠판을 깨끗하게',members:[]},
+      {id:id(),emoji:'🥛',name:'우유 배달',desc:'아침에 우유를 가져와 나눠주기',members:[]},
+      {id:id(),emoji:'♻️',name:'분리수거',desc:'점심 후 분리수거함 정리',members:[]},
+      {id:id(),emoji:'💡',name:'전등·창문',desc:'이동수업·하교 때 불 끄고 창문 닫기',members:[]},
+      {id:id(),emoji:'📚',name:'학급문고 정리',desc:'책장 정리와 대출 확인',members:[]},
+      {id:id(),emoji:'📮',name:'우편 배달',desc:'교무실·다른 반 심부름',members:[]},
+      {id:id(),emoji:'🪴',name:'화분 돌보기',desc:'화분에 물 주기',members:[]},
+    ],
+  };
+/*PRESET_END*/}
+
+/* ============ 상태 & 저장 ============ */
+let S=emptyState();
+let db=null,ref=null,downloads=null,dirty=false,writing=false,saveTimer=null,pendingRemote=null,cloud=false;
+const LSK='class-quest-board-v1';
+try{const raw=localStorage.getItem(LSK);if(raw)S=normalize(JSON.parse(raw))}catch(e){}
+
+function normalize(d){const b=emptyState();const o=Object.assign(b,d||{});
+  o.students=(o.students||[]).map(s=>Object.assign({exp:0,gold:0,stats:{},titles:[],equip:null,avatar:'🧙',name:'',no:0},s));
+  o.bank=Object.assign({rate:10,days:7,deposits:[]},o.bank||{});
+  o.seats=Object.assign({cols:6,order:[]},o.seats||{});
+  o.roleReward=Object.assign(emptyState().roleReward,o.roleReward||{});
+  o.questReward=Object.assign(emptyState().questReward,o.questReward||{});
+  return o}
+
+function setSync(kind,text){const el=document.getElementById('sync');el.className='sync '+kind;el.textContent=text}
+function persist(){
+  try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}
+  if(!ref){setSync('local','이 브라우저에 저장됨');return}
+  dirty=true;setSync('saving','저장 중…');
+  clearTimeout(saveTimer);saveTimer=setTimeout(flush,600);
+}
+async function flush(){
+  if(!ref||writing)return;
+  writing=true;dirty=false;
+  try{await ref.set(JSON.parse(JSON.stringify(S)));setSync('','클라우드에 저장됨')}
+  catch(e){setSync('local','저장 실패 · 이 브라우저에만 보관');console.warn(e)}
+  writing=false;
+  if(dirty){clearTimeout(saveTimer);saveTimer=setTimeout(flush,300)}
+}
+function applyRemote(data){
+  const n=normalize(data);
+  if(JSON.stringify(n)===JSON.stringify(S))return;
+  if(document.querySelector('.overlay')){pendingRemote=n;return}
+  S=n;try{localStorage.setItem(LSK,JSON.stringify(S))}catch(e){}
+  render();
+}
+async function connect(){
+  if(!window.claude||!window.claude.use){setSync('local','이 브라우저에 저장됨');return}
+  try{downloads=await window.claude.use('downloads')}catch(e){}
+  try{db=await window.claude.use('db')}catch(e){db=null}
+  if(!db){setSync('local','이 브라우저에 저장됨');return}
+  ref=db.doc('classroom/state');
+  let first=true;
+  ref.onSnapshot(snap=>{
+    cloud=true;
+    if(first){first=false;
+      if(!snap.exists){ if(S.students.length||S.cards.length) persist(); else setSync('','클라우드 연결됨'); return }
+      setSync('','클라우드에 저장됨');
+    }
+    if(snap.exists&&!dirty&&!writing)applyRemote(snap.data());
+  },err=>{setSync('local','연결 끊김 · 이 브라우저에 저장');ref=null});
+}
+
+/* ============ 유틸 ============ */
+const uid=()=>Math.random().toString(36).slice(2,9);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt=n=>Number(n||0).toLocaleString('ko-KR');
+const pad=n=>String(n).padStart(2,'0');
+function dateKey(d=new Date()){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
+function dateLabel(k){const d=new Date(k+'T00:00:00');return `${d.getMonth()+1}월 ${d.getDate()}일 (${'일월화수목금토'[d.getDay()]})`}
+function shiftDate(k,n){const d=new Date(k+'T00:00:00');d.setDate(d.getDate()+n);return dateKey(d)}
+function timeLabel(t){const d=new Date(t);return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`}
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const stu=id=>S.students.find(s=>s.id===id);
+const sorted=()=>S.students.slice().sort((a,b)=>(a.no||0)-(b.no||0)||a.name.localeCompare(b.name));
+const sname=s=>s?(s.name?`${s.no}번 ${s.name}`:`${s.no}번`):'(삭제된 학생)';
+const short=s=>s?(s.name||`${s.no}번`):'?';
+function levelOf(exp){let lv=1;while(lv<99&&exp>=50*lv*(lv+1))lv++;return lv}
+function levelProg(exp){const lv=levelOf(exp);const base=50*(lv-1)*lv,need=lv*100;return{lv,cur:exp-base,need,pct:Math.min(100,Math.max(0,(exp-base)/need*100))}}
+const titleOf=id=>S.titles.find(t=>t.id===id);
+const gradeOf=k=>GRADES.find(g=>g.k===k)||GRADES[0];
+function rewardTags(r){let h='';
+  if(r.exp)h+=`<span class="tag ${r.exp<0?'bad':'exp'}">EXP ${r.exp>0?'+':''}${fmt(r.exp)}</span>`;
+  if(r.gold)h+=`<span class="tag ${r.gold<0?'bad':'gold'}">골드 ${r.gold>0?'+':''}${fmt(r.gold)}</span>`;
+  for(const k in (r.stats||{}))if(r.stats[k])h+=`<span class="tag stat">${k} ${r.stats[k]>0?'+':''}${r.stats[k]}</span>`;
+  return h}
+function rewardText(r){const p=[];if(r.exp)p.push(`EXP ${r.exp>0?'+':''}${r.exp}`);if(r.gold)p.push(`골드 ${r.gold>0?'+':''}${r.gold}`);
+  for(const k in (r.stats||{}))if(r.stats[k])p.push(`${k}${r.stats[k]>0?'+':''}${r.stats[k]}`);return p.length?` (${p.join(', ')})`:''}
+function addLog(text,sids){S.log.unshift({t:Date.now(),text,sids:sids||[]});if(S.log.length>400)S.log.length=400}
+
+function grant(sids,r,reason,opts={}){
+  const ups=[];
+  sids.forEach(id=>{const s=stu(id);if(!s)return;const before=levelOf(s.exp);
+    s.exp=Math.max(0,s.exp+(r.exp||0));s.gold=Math.max(0,s.gold+(r.gold||0));
+    for(const k in (r.stats||{})){s.stats[k]=Math.max(0,(s.stats[k]||0)+r.stats[k])}
+    const after=levelOf(s.exp);if(after>before)ups.push({s,after});});
+  if(!opts.silent){
+    const who=sids.length>3?`${short(stu(sids[0]))} 외 ${sids.length-1}명`:sids.map(i=>short(stu(i))).join(', ');
+    addLog(`${who} · ${reason}${rewardText(r)}`,sids);
+    toast(`${who}에게 ${reason}${rewardText(r)}`);
+  }
+  if(ups.length)celebrate(ups);
+}
+function commit(){persist();render()}
+
+/* ============ 토스트 / 축하 / 모달 ============ */
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.getElementById('toasts').appendChild(t);setTimeout(()=>t.remove(),3200)}
+function celebrate(ups){
+  const el=document.createElement('div');el.className='levelup';el.setAttribute('role','dialog');
+  el.innerHTML=`<div class="lu"><div style="font-size:54px">${ups.map(u=>esc(u.s.avatar)).slice(0,5).join(' ')}</div><h3>LEVEL UP!</h3>${ups.map(u=>`<p>${esc(sname(u.s))} → Lv.${u.after}</p>`).join('')}<p class="muted" style="font-size:14px;margin-top:14px">아무 곳이나 누르면 닫혀요</p></div>`;
+  el.addEventListener('click',()=>el.remove());document.body.appendChild(el);setTimeout(()=>el.remove(),4500)}
+
+function openModal(html,{mount,onClose}={}){
+  const ov=document.createElement('div');ov.className='overlay';
+  ov.innerHTML=`<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
+  const box=ov.firstChild;let closed=false;
+  const close=(fromCancel)=>{if(closed)return;closed=true;ov.remove();document.removeEventListener('keydown',onKey);
+    if(fromCancel&&onClose)onClose();
+    if(pendingRemote&&!document.querySelector('.overlay')){const p=pendingRemote;pendingRemote=null;S=p;render()}};
+  const onKey=e=>{if(e.key==='Escape')close(true)};
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)close(true)});
+  box.addEventListener('click',e=>{if(e.target.closest('[data-close]'))close(true)});
+  document.addEventListener('keydown',onKey);
+  document.body.appendChild(ov);
+  if(mount)mount(box,()=>close(false));
+  const f=box.querySelector('input:not([type=hidden]),textarea,select');if(f)f.focus();
+  return ()=>close(false);
+}
+function confirmBox(msg,okText='확인',danger=false){return new Promise(res=>{
+  openModal(`<h3>${esc(msg)}</h3><div class="modal-foot"><button class="btn" data-close>취소</button><button class="btn ${danger?'danger':'primary'}" data-ok>${esc(okText)}</button></div>`,
+  {onClose:()=>res(false),mount:(b,close)=>b.querySelector('[data-ok]').onclick=()=>{close();res(true)}})})}
+
+function pickStudents({title,sub='',okText='확인',single=false,disabled=[],note={},preselect=[]}){
+  return new Promise(res=>{
+    if(!S.students.length){toast('먼저 학생을 추가해 주세요');res(null);return}
+    const sel=new Set(preselect);
+    openModal(`<div><h3>${esc(title)}</h3>${sub?`<p class="muted" style="margin:4px 0 0">${sub}</p>`:''}</div>
+      ${single?'':`<div class="chips"><button class="chip" data-all>전체 선택</button><button class="chip" data-none>선택 해제</button></div>`}
+      <div class="pick-grid">${sorted().map(s=>`<button class="pick" data-sid="${s.id}" aria-pressed="${sel.has(s.id)}" ${disabled.includes(s.id)?'disabled':''}><span class="pa">${esc(s.avatar)}</span>${esc(sname(s))}${note[s.id]?`<small>${esc(note[s.id])}</small>`:''}</button>`).join('')}</div>
+      <div class="modal-foot"><span class="grow" data-count></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>${esc(okText)}</button></div>`,
+    {onClose:()=>res(null),mount:(b,close)=>{
+      const upd=()=>{b.querySelectorAll('.pick').forEach(p=>p.setAttribute('aria-pressed',sel.has(p.dataset.sid)));b.querySelector('[data-count]').textContent=single?'':`${sel.size}명 선택`;b.querySelector('[data-ok]').disabled=!sel.size};
+      b.addEventListener('click',e=>{const p=e.target.closest('.pick');
+        if(p&&!p.disabled){const id=p.dataset.sid;if(single){sel.clear();sel.add(id)}else sel.has(id)?sel.delete(id):sel.add(id);upd()}
+        if(e.target.closest('[data-all]')){b.querySelectorAll('.pick:not(:disabled)').forEach(p=>sel.add(p.dataset.sid));upd()}
+        if(e.target.closest('[data-none]')){sel.clear();upd()}});
+      b.querySelector('[data-ok]').onclick=()=>{close();res([...sel])};upd();}});
+  })}
+
+/* ============ 라우팅 ============ */
+let view='home';
+const ui={praiseKind:'praise',praiseCat:'전체',homeMode:'cards',toolTab:'pick',journalTab:'diary',roleDate:dateKey(),journalDate:dateKey(),missionShowEnded:false,shopTab:'shop'};
+function route(){const h=(location.hash||'').slice(1);view=NAV.some(n=>n.id===h)?h:'home';render()}
+window.addEventListener('hashchange',route);
+
+function renderRail(){document.getElementById('rail').innerHTML=NAV.map(n=>n.g?`<div class="group">${n.g}</div>`:`<a href="#${n.id}" ${n.id===view?'aria-current="page"':''}><span class="ic">${n.ic}</span>${n.t}</a>`).join('')}
+function render(){
+  document.getElementById('cls-name').textContent=S.className||'우리반';
+  document.getElementById('today-label').textContent=dateLabel(dateKey())+' · 퀘스트보드';
+  renderRail();
+  const m=document.getElementById('main');
+  m.innerHTML=(VIEWS[view]||VIEWS.home)();
+  if(AFTER[view])AFTER[view](m);
+}
+
+/* ============ 화면: 홈 ============ */
+const VIEWS={},AFTER={};
+function welcomePanel(){return `<div class="welcome">
+  <div class="panel"><h3>1. 학생 등록하기</h3><p class="hint">번호와 이름만 넣으면 캐릭터가 만들어져요. 여러 명을 한 번에 붙여넣을 수도 있어요.</p><div style="margin-top:10px"><button class="btn primary" data-act="add-students">학생 추가</button></div></div>
+  <div class="panel"><h3>2. 기본 세트 불러오기</h3><p class="hint">칭찬·주의 카드 22종, 칭호 11개, 미션·챌린지, 쿠폰 6종, 1인1역 7개가 준비돼 있어요. 불러온 뒤 마음대로 고칠 수 있어요.</p><div style="margin-top:10px"><button class="btn gold" data-act="load-preset">기본 세트 불러오기</button></div></div>
+</div>`}
+VIEWS.home=()=>{
+  const n=S.students.length,today=dateKey();
+  if(!n&&!S.cards.length)return welcomePanel();
+  const diaryN=S.diary.filter(d=>d.date===today).length;
+  const letterN=new Set(S.letters.filter(l=>l.date===today).map(l=>l.from)).size;
+  const roleMembers=S.roles.reduce((a,r)=>a+r.members.length,0);
+  const roleDone=Object.keys(S.roleLog[today]||{}).length;
+  const activeM=S.missions.filter(m=>m.active);
+  const unused=S.owned.filter(o=>!o.usedAt).length;
+  const matured=S.bank.deposits.filter(d=>!d.claimedAt&&Date.now()>=d.at+d.days*864e5).length;
+  const avg=n?(S.students.reduce((a,s)=>a+levelOf(s.exp),0)/n).toFixed(1):0;
+  const q=(ic,t,val,of,href,pct,cls='')=>`<a class="quest" href="#${href}" style="text-decoration:none;color:inherit"><div class="q-top"><span>${ic}</span><span>${t}</span></div><div class="q-val num">${val}${of!==''?`<small> / ${of}</small>`:''}</div>${pct!=null?`<div class="bar ${cls}"><i style="width:${pct}%"></i></div>`:''}</a>`;
+  let roster='';
+  if(ui.homeMode==='cards')roster=n?`<div class="roster">${sorted().map(heroCard).join('')}</div>`:`<div class="empty">학생이 없어요. <button class="btn sm" data-act="add-students">학생 추가</button></div>`;
+  else if(ui.homeMode==='rank')roster=`<div class="rank-list">${S.students.slice().sort((a,b)=>b.exp-a.exp).map((s,i)=>{const p=levelProg(s.exp);return `<button class="rank-item" data-act="student" data-sid="${s.id}"><span class="pos">${i<3?['🥇','🥈','🥉'][i]:i+1}</span><span class="av">${esc(s.avatar)}</span><span style="min-width:0"><b style="font-family:var(--f-display);font-weight:400;font-size:17px">${esc(sname(s))}</b><div class="bar"><i style="width:${p.pct}%"></i></div></span><span class="num" style="font-family:var(--f-display)">Lv.${p.lv}</span><span class="num hide-sm" style="color:var(--accent);font-family:var(--f-display)">${fmt(s.gold)}G</span></button>`}).join('')}</div>`;
+  return `
+  <div class="notice"><div class="bell">📣</div><div class="msg ${S.notice?'':'placeholder'}">${S.notice?esc(S.notice):'학생들에게 전할 알림 메시지를 적어 보세요. 교실 화면에 크게 보여요.'}</div><button class="btn sm" data-act="edit-notice">${S.notice?'수정':'작성'}</button></div>
+  <section class="panel">
+    <div class="ph"><div><h2>오늘의 퀘스트</h2><p>${dateLabel(today)} 학급 활동 한눈에 보기</p></div></div>
+    <div class="quests">
+      ${q('💗','마음일기',diaryN,n,'journal',n?diaryN/n*100:0)}
+      ${q('💌','감사 편지',letterN,n,'journal',n?letterN/n*100:0)}
+      ${q('🧹','1인1역 점검',roleDone,roleMembers,'roles',roleMembers?Math.min(100,roleDone/roleMembers*100):0,'good')}
+      ${q('📜','진행 중 미션',activeM.length,'','missions',null)}
+      ${q('🎟️','미사용 쿠폰',unused,'','shop',null)}
+      ${q('🏦','만기 저축',matured,'','bank',null)}
+    </div>
+  </section>
+  <section class="panel">
+    <div class="ph"><div><h2>학생 현황</h2><p class="num">${n}명 · 평균 Lv.${avg}</p></div>
+      <div class="actions"><button class="btn primary" data-act="quick-card">🃏 카드 지급</button><button class="btn" data-act="quick-gold">💰 골드·EXP 주기</button><button class="btn" data-act="add-students">학생 추가</button></div></div>
+    <div class="subtabs" role="tablist">${[['cards','캐릭터'],['rank','랭킹']].map(([k,t])=>`<button role="tab" aria-selected="${ui.homeMode===k}" data-act="home-mode" data-v="${k}">${t}</button>`).join('')}</div>
+    ${roster}
+  </section>
+  <section class="panel"><div class="ph"><div><h2>최근 기록</h2></div></div>
+    ${S.log.length?`<div class="log">${S.log.slice(0,10).map(l=>`<div><time>${timeLabel(l.t)}</time><span>${esc(l.text)}</span></div>`).join('')}</div>`:'<p class="muted">아직 기록이 없어요.</p>'}
+  </section>`;
+};
+function heroCard(s){const p=levelProg(s.exp);const t=titleOf(s.equip);
+  return `<button class="hero" data-act="student" data-sid="${s.id}"><div class="stage"><span class="lv">Lv.${p.lv}</span><span class="no">${s.no}번</span>${esc(s.avatar)}</div>
+  <div class="ttl">${t?`<span class="grade" style="background:${gradeOf(t.grade).c}">${esc(t.name)}</span>`:''}</div>
+  <div class="nm">${esc(s.name||s.no+'번')}</div><div class="bar"><i style="width:${p.pct}%"></i></div>
+  <div class="meta num"><span>${fmt(p.cur)}/${fmt(p.need)}</span><span style="color:var(--accent)">${fmt(s.gold)}G</span></div></button>`}
+
+/* ============ 학생 상세 ============ */
+function studentModal(id){
+  const s=stu(id);if(!s)return;const p=levelProg(s.exp);
+  const maxStat=Math.max(5,...STATS.map(k=>s.stats[k]||0));
+  const owned=S.owned.filter(o=>o.sid===id&&!o.usedAt);
+  const logs=S.log.filter(l=>l.sids.includes(id)).slice(0,12);
+  const dep=S.bank.deposits.find(d=>d.sid===id&&!d.claimedAt);
+  openModal(`
+    <div class="prof"><div class="pav">${esc(s.avatar)}</div><div>
+      <h3>${esc(sname(s))}</h3>
+      <div class="chips" style="margin:6px 0">${s.titles.map(tid=>{const t=titleOf(tid);return t?`<button class="grade" style="background:${gradeOf(t.grade).c};border:0;${s.equip===tid?'outline:2px solid var(--ink)':''}" data-equip="${tid}" title="대표 칭호로 설정">${s.equip===tid?'★ ':''}${esc(t.name)}</button>`:''}).join('')||'<span class="muted" style="font-size:13px">아직 칭호가 없어요</span>'}</div>
+      <div style="font-family:var(--f-display);font-size:18px" class="num">Lv.${p.lv} · <span style="color:var(--accent)">${fmt(s.gold)} 골드</span></div>
+      <div class="bar" style="margin-top:6px"><i style="width:${p.pct}%"></i></div><div class="muted num" style="font-size:12px;margin-top:2px">다음 레벨까지 EXP ${fmt(p.need-p.cur)} · 누적 ${fmt(s.exp)}</div>
+    </div></div>
+    <div class="statbars">${STATS.map(k=>`<div class="statbar"><span>${k}</span><div class="bar"><i style="width:${(s.stats[k]||0)/maxStat*100}%"></i></div><span class="num">${s.stats[k]||0}</span></div>`).join('')}</div>
+    <div class="panel" style="background:var(--sunk);box-shadow:none;padding:12px">
+      <div class="row"><label class="f">EXP<input class="inp" id="adj-exp" type="number" value="0" step="10"></label><label class="f">골드<input class="inp" id="adj-gold" type="number" value="0" step="10"></label><label class="f" style="flex:2 1 180px">사유<input class="inp" id="adj-why" placeholder="예: 알림장 정리 도움"></label><button class="btn primary" style="flex:0 0 auto" data-adj>적용</button></div>
+      <p class="hint" style="margin:6px 0 0">빼려면 음수(예: -50)를 넣으세요.</p>
+    </div>
+    ${owned.length?`<div><h4 style="font-size:16px;margin-bottom:6px">가진 쿠폰</h4><div class="chips">${owned.map(o=>{const c=S.coupons.find(c=>c.id===o.cid);return `<button class="chip" data-use="${o.id}" title="사용 처리">${esc(c?c.emoji+' '+c.name:'쿠폰')} · 사용</button>`}).join('')}</div></div>`:''}
+    ${dep?`<p class="muted" style="margin:0">🏦 저축 중: ${fmt(dep.amount)}G (만기 ${timeLabel(dep.at+dep.days*864e5)})</p>`:''}
+    <div><h4 style="font-size:16px;margin-bottom:6px">최근 기록</h4>${logs.length?`<div class="log">${logs.map(l=>`<div><time>${timeLabel(l.t)}</time><span>${esc(l.text)}</span></div>`).join('')}</div>`:'<p class="muted" style="margin:0">기록이 없어요.</p>'}</div>
+    <div class="modal-foot"><button class="btn" data-edit>캐릭터 수정</button><span class="grow"></span><button class="btn" data-close>닫기</button></div>`,
+  {mount:(b,close)=>{
+    b.querySelector('[data-adj]').onclick=()=>{const e=+b.querySelector('#adj-exp').value||0,g=+b.querySelector('#adj-gold').value||0;if(!e&&!g)return;
+      grant([id],{exp:e,gold:g},b.querySelector('#adj-why').value.trim()||'선생님 조정');close();commit();studentModal(id)};
+    b.querySelectorAll('[data-equip]').forEach(x=>x.onclick=()=>{s.equip=x.dataset.equip;close();commit();studentModal(id)});
+    b.querySelectorAll('[data-use]').forEach(x=>x.onclick=()=>{useCoupon(x.dataset.use);close();studentModal(id)});
+    b.querySelector('[data-edit]').onclick=()=>{close();editStudent(id)};
+  }});
+}
+function editStudent(id){
+  const s=id?stu(id):{no:(Math.max(0,...S.students.map(x=>x.no||0))+1),name:'',avatar:AVATARS[Math.floor(Math.random()*AVATARS.length)]};
+  let av=s.avatar;
+  openModal(`<h3>${id?'캐릭터 수정':'학생 추가'}</h3>
+    <div class="row"><label class="f" style="flex:0 1 100px">번호<input class="inp" id="e-no" type="number" min="1" value="${s.no}"></label><label class="f">이름<input class="inp" id="e-name" value="${esc(s.name)}" placeholder="이름"></label></div>
+    <div><div class="hint" style="margin-bottom:6px">캐릭터</div><div class="avatars">${AVATARS.map(a=>`<button data-av="${a}" aria-pressed="${a===av}">${a}</button>`).join('')}</div></div>
+    <div class="modal-foot">${id?'<button class="btn danger" data-del>학생 삭제</button>':''}<span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>저장</button></div>`,
+  {mount:(b,close)=>{
+    b.querySelectorAll('[data-av]').forEach(x=>x.onclick=()=>{av=x.dataset.av;b.querySelectorAll('[data-av]').forEach(y=>y.setAttribute('aria-pressed',y.dataset.av===av))});
+    b.querySelector('[data-ok]').onclick=()=>{const no=+b.querySelector('#e-no').value||0,name=b.querySelector('#e-name').value.trim();
+      if(id){Object.assign(s,{no,name,avatar:av})}else{S.students.push({id:uid(),no,name,avatar:av,exp:0,gold:0,stats:{},titles:[],equip:null})}
+      close();commit()};
+    const del=b.querySelector('[data-del]');if(del)del.onclick=async()=>{close();if(await confirmBox(`${sname(s)} 학생을 삭제할까요? 경험치·골드·칭호가 모두 사라져요.`,'삭제',true)){S.students=S.students.filter(x=>x.id!==id);S.roles.forEach(r=>r.members=r.members.filter(m=>m!==id));commit()}};
+  }});
+}
+function addStudentsBulk(){
+  openModal(`<h3>학생 추가</h3><p class="hint" style="margin:0">한 줄에 한 명씩 "번호 이름" 형식으로 적어 주세요. 이름만 적으면 번호가 차례로 붙어요.</p>
+    <textarea class="inp" id="bulk" rows="8" placeholder="1 김하늘&#10;2 이바다&#10;3 박산"></textarea>
+    <div class="modal-foot"><button class="btn" data-one>한 명씩 추가</button><span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>추가</button></div>`,
+  {mount:(b,close)=>{
+    b.querySelector('[data-one]').onclick=()=>{close();editStudent(null)};
+    b.querySelector('[data-ok]').onclick=()=>{let next=Math.max(0,...S.students.map(x=>x.no||0))+1;let c=0;
+      b.querySelector('#bulk').value.split('\n').map(x=>x.trim()).filter(Boolean).forEach(line=>{const m=line.match(/^(\d+)[.\s,번]*\s*(.*)$/);
+        let no,name;if(m){no=+m[1];name=m[2].trim()}else{no=next;name=line}next=Math.max(next,no+1);
+        S.students.push({id:uid(),no,name,avatar:AVATARS[(no-1+AVATARS.length)%AVATARS.length],exp:0,gold:0,stats:{},titles:[],equip:null});c++});
+      close();if(c){toast(`${c}명을 추가했어요`);commit()}};
+  }});
+}
+
+/* ============ 칭찬·주의 카드 ============ */
+VIEWS.praise=()=>{
+  const list=S.cards.filter(c=>c.kind===ui.praiseKind);
+  const cats=['전체',...new Set(list.map(c=>c.cat||'기타'))];
+  if(!cats.includes(ui.praiseCat))ui.praiseCat='전체';
+  const shown=list.filter(c=>ui.praiseCat==='전체'||(c.cat||'기타')===ui.praiseCat);
+  const isWarn=ui.praiseKind==='warn';
+  return `<section class="panel">
+    <div class="subtabs" role="tablist">${[['praise','⭐ 칭찬카드'],['warn','⚠️ 주의카드']].map(([k,t])=>`<button role="tab" aria-selected="${ui.praiseKind===k}" data-act="praise-kind" data-v="${k}">${t}</button>`).join('')}</div>
+    <div class="ph"><div><h2>${isWarn?'주의카드':'칭찬카드'}</h2><p>${isWarn?'규칙을 어겼을 때 경험치·골드를 차감해요. 차감 뒤 0 아래로는 내려가지 않아요.':'좋은 행동을 카드로 인정하고 경험치·골드·능력치를 올려 줘요.'}</p></div>
+      <div class="actions">${isWarn?'':'<button class="btn gold" data-act="custom-praise">✍️ 직접 칭찬</button>'}<button class="btn primary" data-act="card-edit">+ 새 카드</button></div></div>
+    <div class="chips" style="margin-bottom:14px">${cats.map(c=>`<button class="chip" aria-pressed="${ui.praiseCat===c}" data-act="praise-cat" data-v="${esc(c)}">${esc(c)} ${c==='전체'?list.length:list.filter(x=>(x.cat||'기타')===c).length}</button>`).join('')}</div>
+    ${shown.length?`<div class="cards">${shown.map(c=>`<div class="pcard ${isWarn?'warn':''}"><div class="pc-head"><div class="pc-emb">${esc(c.emoji||(isWarn?'⚠️':'⭐'))}</div><div style="min-width:0"><h4>${esc(c.name)}</h4><div class="pc-desc">${esc(c.desc||'')}</div></div></div>
+      <div class="pc-tags">${rewardTags(c)}</div>
+      <div class="pc-foot"><button data-act="card-edit" data-id="${c.id}">수정</button><button class="go" data-act="card-give" data-id="${c.id}">${isWarn?'주기':'지급하기'}</button></div></div>`).join('')}</div>`
+      :`<div class="empty">카드가 없어요. 새 카드를 만들거나 학생·설정에서 기본 세트를 불러오세요.</div>`}
+  </section>`;
+};
+async function giveCard(cid){const c=S.cards.find(x=>x.id===cid);if(!c)return;
+  const sids=await pickStudents({title:`${c.emoji||''} ${c.name}`,sub:`누구에게 줄까요? ${rewardText(c)}`,okText:c.kind==='warn'?'주의카드 주기':'카드 지급'});
+  if(!sids||!sids.length)return;grant(sids,c,`${c.kind==='warn'?'주의카드':'칭찬카드'} '${c.name}'`);commit()}
+function cardForm(cid){
+  const c=cid?S.cards.find(x=>x.id===cid):{kind:ui.praiseKind,cat:ui.praiseCat==='전체'?'생활':ui.praiseCat,name:'',desc:'',exp:ui.praiseKind==='warn'?-50:100,gold:ui.praiseKind==='warn'?-50:100,stats:{},emoji:ui.praiseKind==='warn'?'⚠️':'⭐'};
+  const warn=c.kind==='warn';
+  openModal(`<h3>${cid?'카드 수정':'새 '+(warn?'주의':'칭찬')+'카드'}</h3>
+    <div class="row"><label class="f" style="flex:0 1 80px">아이콘<input class="inp" id="c-emo" value="${esc(c.emoji||'')}" maxlength="4"></label><label class="f" style="flex:2 1 200px">카드 이름<input class="inp" id="c-name" value="${esc(c.name)}"></label><label class="f">분류<input class="inp" id="c-cat" value="${esc(c.cat||'')}" list="cat-list"></label></div>
+    <datalist id="cat-list">${[...new Set(S.cards.map(x=>x.cat))].map(x=>`<option value="${esc(x)}">`).join('')}</datalist>
+    <label class="f">설명<input class="inp" id="c-desc" value="${esc(c.desc||'')}"></label>
+    <div class="row"><label class="f">EXP ${warn?'(음수 = 차감)':''}<input class="inp" id="c-exp" type="number" step="10" value="${c.exp}"></label><label class="f">골드<input class="inp" id="c-gold" type="number" step="10" value="${c.gold}"></label></div>
+    <div><div class="hint" style="margin-bottom:6px">능력치 변화</div><div class="grid-form">${STATS.map(k=>`<label class="f">${k}<input class="inp" type="number" data-stat="${k}" value="${c.stats[k]||0}"></label>`).join('')}</div></div>
+    <div class="modal-foot">${cid?'<button class="btn danger" data-del>삭제</button>':''}<span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>저장</button></div>`,
+  {mount:(b,close)=>{
+    b.querySelector('[data-ok]').onclick=()=>{const name=b.querySelector('#c-name').value.trim();if(!name){b.querySelector('#c-name').focus();return}
+      const stats={};b.querySelectorAll('[data-stat]').forEach(i=>{const v=+i.value;if(v)stats[i.dataset.stat]=v});
+      const d={name,emoji:b.querySelector('#c-emo').value.trim(),cat:b.querySelector('#c-cat').value.trim()||'기타',desc:b.querySelector('#c-desc').value.trim(),exp:+b.querySelector('#c-exp').value||0,gold:+b.querySelector('#c-gold').value||0,stats};
+      if(cid)Object.assign(c,d);else S.cards.push(Object.assign({id:uid(),kind:c.kind},d));close();commit()};
+    const del=b.querySelector('[data-del]');if(del)del.onclick=async()=>{close();if(await confirmBox(`'${c.name}' 카드를 삭제할까요?`,'삭제',true)){S.cards=S.cards.filter(x=>x.id!==cid);commit()}};
+  }});
+}
+function customPraise(){
+  openModal(`<h3>✍️ 직접 칭찬</h3><label class="f">칭찬 내용<input class="inp" id="cp-text" placeholder="예: 쓰러진 화분을 스스로 세워 줬어요"></label>
+    <div class="row"><label class="f">EXP<input class="inp" id="cp-exp" type="number" step="10" value="100"></label><label class="f">골드<input class="inp" id="cp-gold" type="number" step="10" value="100"></label>
+    <label class="f">능력치<select class="inp" id="cp-stat"><option value="">없음</option>${STATS.map(k=>`<option>${k}</option>`).join('')}</select></label></div>
+    <div class="modal-foot"><span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>학생 고르기</button></div>`,
+  {mount:(b,close)=>b.querySelector('[data-ok]').onclick=async()=>{const t=b.querySelector('#cp-text').value.trim()||'선생님 칭찬';
+    const r={exp:+b.querySelector('#cp-exp').value||0,gold:+b.querySelector('#cp-gold').value||0,stats:{}};const st=b.querySelector('#cp-stat').value;if(st)r.stats[st]=1;
+    close();const sids=await pickStudents({title:'누구를 칭찬할까요?',sub:esc(t),okText:'칭찬하기'});if(sids&&sids.length){grant(sids,r,`직접 칭찬 '${t}'`);commit()}}});
+}
+async function quickCard(){
+  const list=S.cards;if(!list.length){toast('카드가 없어요. 칭찬·주의 카드에서 먼저 만들어 주세요');return}
+  openModal(`<h3>어떤 카드를 줄까요?</h3><div class="cards" style="grid-template-columns:repeat(auto-fill,minmax(180px,1fr))">${list.map(c=>`<button class="pcard ${c.kind==='warn'?'warn':''}" data-cid="${c.id}" style="text-align:left;cursor:pointer"><div class="pc-head"><div class="pc-emb">${esc(c.emoji||'⭐')}</div><div><h4>${esc(c.name)}</h4></div></div><div class="pc-tags">${rewardTags(c)}</div></button>`).join('')}</div><div class="modal-foot"><button class="btn" data-close>닫기</button></div>`,
+  {mount:(b,close)=>b.querySelectorAll('[data-cid]').forEach(x=>x.onclick=()=>{close();giveCard(x.dataset.cid)})});
+}
+async function quickGold(){
+  openModal(`<h3>💰 골드·EXP 주기</h3><div class="row"><label class="f">EXP<input class="inp" id="qg-exp" type="number" step="10" value="50"></label><label class="f">골드<input class="inp" id="qg-gold" type="number" step="10" value="50"></label></div><label class="f">사유<input class="inp" id="qg-why" placeholder="예: 모둠활동 우승"></label>
+    <div class="modal-foot"><span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>학생 고르기</button></div>`,
+  {mount:(b,close)=>b.querySelector('[data-ok]').onclick=async()=>{const r={exp:+b.querySelector('#qg-exp').value||0,gold:+b.querySelector('#qg-gold').value||0};const why=b.querySelector('#qg-why').value.trim()||'선생님 보상';
+    close();const sids=await pickStudents({title:'누구에게 줄까요?',sub:esc(why)+rewardText(r),okText:'지급'});if(sids&&sids.length){grant(sids,r,why);commit()}}});
+}
+
+/* ============ 칭호 ============ */
+VIEWS.titles=()=>`<section class="panel">
+  <div class="ph"><div><h2>칭호</h2><p>등급(일반·고급·희귀·영웅·전설)에 따라 보상이 달라요. 받은 칭호는 캐릭터 이름 위에 표시돼요.</p></div><div class="actions"><button class="btn primary" data-act="title-edit">+ 새 칭호</button></div></div>
+  <div class="chips" style="margin-bottom:14px">${GRADES.map(g=>`<span class="grade" style="background:${g.c}">${g.k} · EXP ${g.r} / ${g.r}G</span>`).join('')}</div>
+  ${S.titles.length?`<div class="tlist">${GRADES.flatMap(g=>S.titles.filter(t=>t.grade===g.k)).map(t=>{const hold=S.students.filter(s=>s.titles.includes(t.id));
+    return `<div class="tcard"><div style="display:flex;align-items:center;gap:8px"><span class="grade" style="background:${gradeOf(t.grade).c}">${t.grade}</span><span class="t-name">${esc(t.name)}</span><button class="icon-btn" style="margin-left:auto" data-act="title-edit" data-id="${t.id}" aria-label="수정">✎</button></div>
+    <div style="font-size:14px">${esc(t.desc||'')}</div>${t.cond?`<div class="hint">🎯 ${esc(t.cond)}</div>`:''}<div>${rewardTags(t)}</div>
+    <div class="holders">${hold.length?hold.map(s=>`<span class="holder">${esc(s.avatar)} ${esc(short(s))}</span>`).join(''):'<span class="hint">아직 받은 학생이 없어요</span>'}</div>
+    <div style="display:flex;gap:6px;margin-top:auto"><button class="btn sm primary" data-act="title-give" data-id="${t.id}">수여</button>${hold.length?`<button class="btn sm" data-act="title-revoke" data-id="${t.id}">회수</button>`:''}</div></div>`}).join('')}</div>`:'<div class="empty">칭호가 없어요.</div>'}
+</section>`;
+async function giveTitle(tid,sidsIn){const t=titleOf(tid);if(!t)return;
+  const holders=S.students.filter(s=>s.titles.includes(tid)).map(s=>s.id);
+  const sids=sidsIn||await pickStudents({title:`👑 '${t.name}' 수여`,sub:rewardText(t)+' · 이미 가진 학생은 고를 수 없어요',okText:'수여하기',disabled:holders});
+  if(!sids||!sids.length)return;
+  sids.forEach(id=>{const s=stu(id);if(s&&!s.titles.includes(tid)){s.titles.push(tid);s.equip=tid}});
+  grant(sids,t,`칭호 '${t.name}' 획득`);if(!sidsIn)commit()}
+async function revokeTitle(tid){const t=titleOf(tid);const holders=S.students.filter(s=>s.titles.includes(tid));
+  const sids=await pickStudents({title:`'${t.name}' 회수`,sub:'보상으로 받은 EXP·골드는 그대로 두어요.',okText:'회수',disabled:S.students.filter(s=>!s.titles.includes(tid)).map(s=>s.id)});
+  if(!sids||!sids.length)return;sids.forEach(id=>{const s=stu(id);s.titles=s.titles.filter(x=>x!==tid);if(s.equip===tid)s.equip=s.titles[s.titles.length-1]||null});
+  addLog(`칭호 '${t.name}' 회수: ${sids.map(i=>short(stu(i))).join(', ')}`,sids);commit()}
+function titleForm(tid){const t=tid?titleOf(tid):{name:'',grade:'희귀',desc:'',cond:'',exp:300,gold:300};
+  openModal(`<h3>${tid?'칭호 수정':'새 칭호'}</h3><div class="row"><label class="f" style="flex:2 1 200px">칭호 이름<input class="inp" id="t-name" value="${esc(t.name)}"></label><label class="f">등급<select class="inp" id="t-grade">${GRADES.map(g=>`<option ${g.k===t.grade?'selected':''}>${g.k}</option>`).join('')}</select></label></div>
+    <label class="f">설명<input class="inp" id="t-desc" value="${esc(t.desc)}"></label><label class="f">획득 조건<input class="inp" id="t-cond" value="${esc(t.cond)}"></label>
+    <div class="row"><label class="f">EXP<input class="inp" id="t-exp" type="number" value="${t.exp}"></label><label class="f">골드<input class="inp" id="t-gold" type="number" value="${t.gold}"></label></div>
+    <div class="modal-foot">${tid?'<button class="btn danger" data-del>삭제</button>':''}<span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>저장</button></div>`,
+  {mount:(b,close)=>{const g=b.querySelector('#t-grade');g.onchange=()=>{const r=gradeOf(g.value).r;b.querySelector('#t-exp').value=r;b.querySelector('#t-gold').value=r};
+    b.querySelector('[data-ok]').onclick=()=>{const name=b.querySelector('#t-name').value.trim();if(!name)return;
+      const d={name,grade:g.value,desc:b.querySelector('#t-desc').value.trim(),cond:b.querySelector('#t-cond').value.trim(),exp:+b.querySelector('#t-exp').value||0,gold:+b.querySelector('#t-gold').value||0};
+      if(tid)Object.assign(t,d);else S.titles.push(Object.assign({id:uid()},d));close();commit()};
+    const del=b.querySelector('[data-del]');if(del)del.onclick=async()=>{close();if(await confirmBox(`'${t.name}' 칭호를 삭제할까요? 가진 학생에게서도 사라져요.`,'삭제',true)){S.titles=S.titles.filter(x=>x.id!==tid);S.students.forEach(s=>{s.titles=s.titles.filter(x=>x!==tid);if(s.equip===tid)s.equip=null});S.missions.forEach(m=>{if(m.titleId===tid)m.titleId=null});commit()}};
+  }});
+}
+
+/* ============ 미션·챌린지 ============ */
+VIEWS.missions=()=>{const n=S.students.length;const list=S.missions.filter(m=>m.active!==ui.missionShowEnded);
+  return `<section class="panel"><div class="ph"><div><h2>미션·챌린지</h2><p>미션은 반복해서 할 수 있는 과제, 챌린지는 한 번 달성하면 큰 보상과 칭호를 주는 단계 목표예요.</p></div>
+  <div class="actions"><button class="btn" data-act="mission-ended">${ui.missionShowEnded?'진행 중 보기':'종료된 것 보기'}</button><button class="btn primary" data-act="mission-edit">+ 새 미션</button></div></div>
+  ${list.length?`<div class="mlist">${list.map(m=>{const ids=Object.keys(m.done||{}).filter(id=>stu(id));const cnt=ids.length;const t=titleOf(m.titleId);
+    return `<div class="mission ${m.type==='challenge'?'challenge':''}"><div class="m-ic">${esc(m.emoji||'📜')}</div>
+    <div style="min-width:0"><div class="chips" style="margin-bottom:4px"><span class="tag ${m.type==='challenge'?'gold':'exp'}">${m.type==='challenge'?'챌린지':'미션'}</span>${m.repeat?'<span class="tag plain">반복</span>':''}<span class="tag plain">${esc(m.diff||'보통')}</span>${t?`<span class="grade" style="background:${gradeOf(t.grade).c}">칭호: ${esc(t.name)}</span>`:''}</div>
+      <h4>${esc(m.name)}</h4><div class="m-desc">${esc(m.desc||'')}</div><div>${rewardTags(m)}</div>
+      ${cnt?`<div class="done-list">${ids.map(id=>`<span class="done-pill">${esc(short(stu(id)))}${m.repeat&&m.done[id]>1?` ×${m.done[id]}`:''}<button data-act="mission-undo" data-id="${m.id}" data-sid="${id}" aria-label="완료 취소">×</button></span>`).join('')}</div>`:''}</div>
+    <div class="m-side"><div class="num" style="font-family:var(--f-display);font-size:18px">${cnt}/${n}명</div><div class="bar good" style="width:120px"><i style="width:${n?cnt/n*100:0}%"></i></div>
+      <button class="btn sm primary" data-act="mission-done" data-id="${m.id}">완료 처리</button><div style="display:flex;gap:4px"><button class="btn sm" data-act="mission-edit" data-id="${m.id}">수정</button><button class="btn sm" data-act="mission-toggle" data-id="${m.id}">${m.active?'종료':'다시 열기'}</button></div></div></div>`}).join('')}</div>`
+  :`<div class="empty">${ui.missionShowEnded?'종료된 미션이 없어요.':'진행 중인 미션이 없어요.'}</div>`}</section>`};
+async function missionDone(mid){const m=S.missions.find(x=>x.id===mid);if(!m)return;
+  const disabled=m.repeat?[]:Object.keys(m.done||{});const note={};for(const k in m.done)note[k]=m.repeat?`${m.done[k]}회 완료`:'완료';
+  const sids=await pickStudents({title:`${m.emoji||''} ${m.name}`,sub:'완료한 학생을 고르세요'+rewardText(m),okText:'완료 처리',disabled,note});
+  if(!sids||!sids.length)return;m.done=m.done||{};sids.forEach(id=>m.done[id]=(m.done[id]||0)+1);
+  grant(sids,m,`${m.type==='challenge'?'챌린지':'미션'} '${m.name}' 완료`);
+  if(m.titleId){const fresh=sids.filter(id=>!stu(id).titles.includes(m.titleId));if(fresh.length)giveTitle(m.titleId,fresh)}
+  commit()}
+function missionUndo(mid,sid){const m=S.missions.find(x=>x.id===mid);if(!m||!m.done[sid])return;
+  m.done[sid]--;if(m.done[sid]<=0)delete m.done[sid];
+  grant([sid],{exp:-m.exp,gold:-m.gold,stats:Object.fromEntries(Object.entries(m.stats||{}).map(([k,v])=>[k,-v]))},'',{silent:true});
+  addLog(`${short(stu(sid))} · '${m.name}' 완료 취소`,[sid]);toast('완료를 취소하고 보상을 되돌렸어요');commit()}
+function missionForm(mid){const m=mid?S.missions.find(x=>x.id===mid):{type:'mission',emoji:'📜',name:'',desc:'',diff:'보통',repeat:false,exp:100,gold:100,stats:{},titleId:null,active:true,done:{}};
+  openModal(`<h3>${mid?'미션 수정':'새 미션·챌린지'}</h3>
+    <div class="chips">${[['mission','📜 미션'],['challenge','🏆 챌린지']].map(([k,t])=>`<button class="chip" data-type="${k}" aria-pressed="${m.type===k}">${t}</button>`).join('')}</div>
+    <div class="row"><label class="f" style="flex:0 1 80px">아이콘<input class="inp" id="m-emo" value="${esc(m.emoji)}" maxlength="4"></label><label class="f" style="flex:2 1 220px">이름<input class="inp" id="m-name" value="${esc(m.name)}"></label></div>
+    <label class="f">설명<textarea class="inp" id="m-desc">${esc(m.desc)}</textarea></label>
+    <div class="row"><label class="f">난이도<select class="inp" id="m-diff">${['쉬움','보통','어려움'].map(d=>`<option ${d===m.diff?'selected':''}>${d}</option>`).join('')}</select></label>
+      <label class="f">EXP<input class="inp" id="m-exp" type="number" step="10" value="${m.exp}"></label><label class="f">골드<input class="inp" id="m-gold" type="number" step="10" value="${m.gold}"></label></div>
+    <div class="row"><label class="f">달성 시 칭호<select class="inp" id="m-title"><option value="">없음</option>${S.titles.map(t=>`<option value="${t.id}" ${t.id===m.titleId?'selected':''}>[${t.grade}] ${esc(t.name)}</option>`).join('')}</select></label>
+      <label class="f" style="flex-direction:row;align-items:center;gap:8px;padding-bottom:8px"><input type="checkbox" id="m-rep" ${m.repeat?'checked':''}> 여러 번 완료 가능(반복)</label></div>
+    <div><div class="hint" style="margin-bottom:6px">능력치 변화</div><div class="grid-form">${STATS.map(k=>`<label class="f">${k}<input class="inp" type="number" data-stat="${k}" value="${(m.stats||{})[k]||0}"></label>`).join('')}</div></div>
+    <div class="modal-foot">${mid?'<button class="btn danger" data-del>삭제</button>':''}<span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>저장</button></div>`,
+  {mount:(b,close)=>{let type=m.type;b.querySelectorAll('[data-type]').forEach(x=>x.onclick=()=>{type=x.dataset.type;b.querySelectorAll('[data-type]').forEach(y=>y.setAttribute('aria-pressed',y.dataset.type===type))});
+    b.querySelector('[data-ok]').onclick=()=>{const name=b.querySelector('#m-name').value.trim();if(!name)return;const stats={};b.querySelectorAll('[data-stat]').forEach(i=>{const v=+i.value;if(v)stats[i.dataset.stat]=v});
+      const d={type,name,emoji:b.querySelector('#m-emo').value.trim()||'📜',desc:b.querySelector('#m-desc').value.trim(),diff:b.querySelector('#m-diff').value,exp:+b.querySelector('#m-exp').value||0,gold:+b.querySelector('#m-gold').value||0,titleId:b.querySelector('#m-title').value||null,repeat:b.querySelector('#m-rep').checked,stats};
+      if(mid)Object.assign(m,d);else S.missions.unshift(Object.assign({id:uid(),active:true,done:{}},d));close();commit()};
+    const del=b.querySelector('[data-del]');if(del)del.onclick=async()=>{close();if(await confirmBox(`'${m.name}'을(를) 삭제할까요?`,'삭제',true)){S.missions=S.missions.filter(x=>x.id!==mid);commit()}};
+  }});
+}
+
+/* ============ 1인1역 ============ */
+VIEWS.roles=()=>{const d=ui.roleDate,day=S.roleLog[d]||{};const rr=S.roleReward;
+  const tally={done:0,bonus:0,penalty:0};Object.values(day).forEach(v=>tally[v]++);
+  return `<section class="panel"><div class="ph"><div><h2>1인1역</h2><p>역할마다 담당 학생을 정하고, 매일 수행 여부를 체크하면 보상이 자동으로 들어가요.</p></div>
+    <div class="actions"><button class="btn" data-act="role-random">🔀 랜덤 배정</button><button class="btn primary" data-act="role-edit">+ 역할 추가</button></div></div>
+    <div class="daybar"><button class="btn sm" data-act="role-day" data-v="-1" aria-label="이전 날">‹</button><span class="d">${dateLabel(d)}</span><button class="btn sm" data-act="role-day" data-v="1" aria-label="다음 날">›</button>${d!==dateKey()?'<button class="btn sm" data-act="role-day" data-v="0">오늘</button>':''}
+      <span class="tag exp">수행 ${tally.done}</span><span class="tag stat">보너스 ${tally.bonus}</span><span class="tag bad">패널티 ${tally.penalty}</span></div>
+    <p class="hint" style="margin:-6px 0 12px">수행 ${rewardText(rr.done)} · 보너스 ${rewardText(rr.bonus)} · 패널티 ${rewardText(rr.penalty)} — 보상은 학생·설정에서 바꿀 수 있어요. 다시 누르면 취소돼요.</p>
+    ${S.roles.length?`<div class="roles">${S.roles.map(r=>`<div class="role"><div class="role-h"><span style="font-size:22px">${esc(r.emoji||'🧹')}</span><h4>${esc(r.name)}</h4><button class="btn sm" data-act="role-assign" data-id="${r.id}">담당</button><button class="icon-btn" data-act="role-edit" data-id="${r.id}" aria-label="수정">✎</button></div>
+      ${r.desc?`<div class="hint" style="margin-bottom:4px">${esc(r.desc)}</div>`:''}
+      ${r.members.filter(stu).length?r.members.filter(stu).map(sid=>{const v=day[r.id+':'+sid];const s=stu(sid);return `<div class="member"><span style="font-size:20px">${esc(s.avatar)}</span><span class="mn">${esc(sname(s))}</span><span class="seg">${[['done','수행'],['bonus','보너스'],['penalty','패널티']].map(([k,t])=>`<button data-act="role-check" data-rid="${r.id}" data-sid="${sid}" data-v="${k}" aria-pressed="${v===k}">${t}</button>`).join('')}</span></div>`}).join(''):'<div class="hint member">담당 학생이 없어요</div>'}
+    </div>`).join('')}</div>`:'<div class="empty">역할이 없어요.</div>'}
+  </section>`};
+function roleCheck(rid,sid,v){const d=ui.roleDate;S.roleLog[d]=S.roleLog[d]||{};const key=rid+':'+sid;const old=S.roleLog[d][key];const rr=S.roleReward;const r=S.roles.find(x=>x.id===rid);
+  if(old){const o=rr[old];grant([sid],{exp:-o.exp,gold:-o.gold},'',{silent:true})}
+  if(old===v){delete S.roleLog[d][key];toast('체크를 취소했어요')}
+  else{S.roleLog[d][key]=v;grant([sid],rr[v],`1인1역 '${r?r.name:''}' ${({done:'수행',bonus:'보너스',penalty:'패널티'})[v]}`)}
+  if(!Object.keys(S.roleLog[d]).length)delete S.roleLog[d];commit()}
+async function roleAssign(rid){const r=S.roles.find(x=>x.id===rid);const note={};S.roles.forEach(x=>x.members.forEach(m=>{if(x.id!==rid)note[m]=x.name}));
+  const sids=await pickStudents({title:`${r.emoji||''} ${r.name} 담당`,sub:'다른 역할을 맡은 학생도 고를 수 있어요.',okText:'저장',preselect:r.members,note});if(sids===null)return;r.members=sids;commit()}
+async function roleRandom(){if(!S.roles.length||!S.students.length)return;if(!await confirmBox('모든 역할의 담당을 랜덤으로 다시 정할까요?','랜덤 배정'))return;
+  S.roles.forEach(r=>r.members=[]);shuffle(S.students).forEach((s,i)=>S.roles[i%S.roles.length].members.push(s.id));addLog('1인1역 랜덤 배정');commit()}
+function roleForm(rid){const r=rid?S.roles.find(x=>x.id===rid):{emoji:'🧹',name:'',desc:'',members:[]};
+  openModal(`<h3>${rid?'역할 수정':'역할 추가'}</h3><div class="row"><label class="f" style="flex:0 1 80px">아이콘<input class="inp" id="r-emo" value="${esc(r.emoji)}" maxlength="4"></label><label class="f" style="flex:2 1 200px">역할 이름<input class="inp" id="r-name" value="${esc(r.name)}"></label></div><label class="f">하는 일<input class="inp" id="r-desc" value="${esc(r.desc)}"></label>
+    <div class="modal-foot">${rid?'<button class="btn danger" data-del>삭제</button>':''}<span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>저장</button></div>`,
+  {mount:(b,close)=>{b.querySelector('[data-ok]').onclick=()=>{const name=b.querySelector('#r-name').value.trim();if(!name)return;const d={name,emoji:b.querySelector('#r-emo').value.trim(),desc:b.querySelector('#r-desc').value.trim()};
+      if(rid)Object.assign(r,d);else S.roles.push(Object.assign({id:uid(),members:[]},d));close();commit()};
+    const del=b.querySelector('[data-del]');if(del)del.onclick=async()=>{close();if(await confirmBox(`'${r.name}' 역할을 삭제할까요?`,'삭제',true)){S.roles=S.roles.filter(x=>x.id!==rid);commit()}}}});
+}
+
+/* ============ 마음일기·감사편지 ============ */
+VIEWS.journal=()=>{const d=ui.journalDate;const isToday=d===dateKey();
+  const head=`<div class="subtabs" role="tablist">${[['diary','💗 마음일기'],['letter','💌 감사 편지']].map(([k,t])=>`<button role="tab" aria-selected="${ui.journalTab===k}" data-act="journal-tab" data-v="${k}">${t}</button>`).join('')}</div>
+    <div class="daybar"><button class="btn sm" data-act="journal-day" data-v="-1" aria-label="이전 날">‹</button><span class="d">${dateLabel(d)}</span><button class="btn sm" data-act="journal-day" data-v="1" aria-label="다음 날">›</button>${isToday?'':'<button class="btn sm" data-act="journal-day" data-v="0">오늘</button>'}</div>`;
+  if(ui.journalTab==='diary'){const entries=S.diary.filter(x=>x.date===d);const cnt={};entries.forEach(e=>cnt[e.mood]=(cnt[e.mood]||0)+1);
+    return `<section class="panel"><div class="ph"><div><h2>마음일기</h2><p>오늘 기분을 고르고 한 줄로 적어요. 처음 저장하면 ${rewardText(S.questReward.diary).replace(/[()]/g,'')} 보상을 받아요.</p></div></div>${head}
+    <div class="mood-summary">${MOODS.map(([e,t])=>`<span>${e} ${t} ${cnt[e]||0}</span>`).join('')}</div>
+    ${S.students.length?`<div class="diary">${sorted().map(s=>{const e=entries.find(x=>x.sid===s.id);return `<div class="drow ${e?'saved':''}" data-sid="${s.id}"><div class="who"><span style="font-size:24px">${esc(s.avatar)}</span><span>${esc(sname(s))}</span></div>
+      <div class="moods">${MOODS.map(([m,t])=>`<button data-mood="${m}" aria-pressed="${e&&e.mood===m}" title="${t}" aria-label="${t}">${m}</button>`).join('')}</div>
+      <input class="inp" id="dtext-${s.id}" value="${esc(e?e.text:'')}" placeholder="오늘 있었던 일, 마음을 한 줄로"><button class="btn sm ${e?'':'primary'}" data-act="diary-save" data-sid="${s.id}">${e?'고치기':'저장'}</button></div>`}).join('')}</div>`:'<div class="empty">학생을 먼저 추가해 주세요.</div>'}</section>`}
+  const letters=S.letters.filter(x=>x.date===d);
+  return `<section class="panel"><div class="ph"><div><h2>감사 편지</h2><p>고마운 친구에게 마음을 전해요. 편지를 쓴 학생은 하루 한 번 ${rewardText(S.questReward.letter).replace(/[()]/g,'')} 보상을 받아요.</p></div></div>${head}
+    <div class="panel" style="background:var(--sunk);box-shadow:none;margin-bottom:14px"><div class="row">
+      <label class="f">보내는 사람<select class="inp" id="l-from"><option value="">고르기</option>${sorted().map(s=>`<option value="${s.id}">${esc(sname(s))}</option>`).join('')}</select></label>
+      <label class="f">받는 사람<select class="inp" id="l-to"><option value="">고르기</option><option value="teacher">선생님</option>${sorted().map(s=>`<option value="${s.id}">${esc(sname(s))}</option>`).join('')}</select></label></div>
+      <label class="f" style="margin-top:10px">편지 내용<textarea class="inp" id="l-text" placeholder="고마웠던 일을 적어 보세요"></textarea></label>
+      <div style="margin-top:10px;text-align:right"><button class="btn primary" data-act="letter-save">편지 보내기</button></div></div>
+    ${letters.length?`<div class="letters">${letters.map(l=>`<div class="letter"><div class="lt-to">To. ${l.to==='teacher'?'선생님':esc(short(stu(l.to)))}</div><div class="lt-body">${esc(l.text)}</div><div class="lt-from">From. ${esc(short(stu(l.from)))}</div><div style="text-align:right"><button class="icon-btn" data-act="letter-del" data-id="${l.id}">삭제</button></div></div>`).join('')}</div>`:'<div class="empty">이 날 쓴 편지가 없어요.</div>'}
+  </section>`};
+AFTER.journal=m=>{m.querySelectorAll('.drow').forEach(row=>row.querySelectorAll('[data-mood]').forEach(b=>b.onclick=()=>{row.querySelectorAll('[data-mood]').forEach(x=>x.setAttribute('aria-pressed',x===b));row.dataset.mood=b.dataset.mood}))};
+function diarySave(sid,row){const d=ui.journalDate;const sel=row.querySelector('[data-mood][aria-pressed="true"]');const text=row.querySelector('input').value.trim();
+  if(!sel){toast('기분을 먼저 골라 주세요');return}
+  let e=S.diary.find(x=>x.date===d&&x.sid===sid);
+  if(e){e.mood=sel.dataset.mood;e.text=text;toast('마음일기를 고쳤어요')}
+  else{S.diary.push({id:uid(),date:d,sid,mood:sel.dataset.mood,text});grant([sid],S.questReward.diary,'마음일기 작성')}
+  if(S.diary.length>3000)S.diary=S.diary.slice(-3000);commit()}
+function letterSave(){const from=document.getElementById('l-from').value,to=document.getElementById('l-to').value,text=document.getElementById('l-text').value.trim();
+  if(!from||!to||!text){toast('보내는 사람, 받는 사람, 내용을 모두 채워 주세요');return}
+  if(from===to){toast('자기 자신에게는 보낼 수 없어요');return}
+  const d=ui.journalDate;const first=!S.letters.some(l=>l.date===d&&l.from===from);
+  S.letters.push({id:uid(),date:d,from,to,text});if(S.letters.length>2000)S.letters=S.letters.slice(-2000);
+  if(first)grant([from],S.questReward.letter,`감사 편지 (To. ${to==='teacher'?'선생님':short(stu(to))})`);else{addLog(`${short(stu(from))} · 감사 편지`,[from]);toast('편지를 보냈어요')}
+  commit()}
+
+/* ============ 클래스 툴 ============ */
+const tool={picked:[],last:[],teams:null,pickBusy:false,tm:{total:300,left:300,running:false,iv:null,end:0},wheel:{items:null,rot:0,spinning:false,result:''},seatSel:null};
+let audioCtx=null;
+VIEWS.tools=()=>{const tabs=[['pick','🎲 뽑기'],['team','👥 팀 나누기'],['timer','⏰ 타이머'],['wheel','🎯 돌림판'],['talk','🏆 발표 점수'],['seat','🪑 자리 배치']];
+  let body='';const n=S.students.length;const remain=S.students.filter(s=>!tool.picked.includes(s.id));
+  if(ui.toolTab==='pick')body=`<div class="stage-big" id="pick-stage">${tool.last.length?`<div><div class="pick-result">${tool.last.map(id=>`<span>${esc(stu(id)?.avatar||'')} ${esc(short(stu(id)))}</span>`).join('')}</div></div>`:`<div><div class="big">누가 뽑힐까?</div><div class="sub">한 번 뽑힌 학생은 다시 나오지 않아요</div></div>`}</div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:14px;flex-wrap:wrap"><button class="btn lg primary" data-act="pick" data-v="1">🎲 1명 뽑기 (남은 ${remain.length}명)</button>${[2,3,4,5].map(k=>`<button class="btn" data-act="pick" data-v="${k}">${k}명</button>`).join('')}<button class="btn" data-act="pick-reset">처음부터</button></div>
+    ${tool.picked.length?`<p class="hint" style="text-align:center;margin-top:12px">뽑힌 학생: ${tool.picked.map(id=>esc(short(stu(id)))).join(', ')}</p>`:''}`;
+  if(ui.toolTab==='team')body=`<div style="display:flex;gap:8px;flex-wrap:wrap">${[2,3,4,5,6].map(k=>`<button class="btn ${k===2?'primary':''}" data-act="team" data-v="${k}">${k}팀 나누기</button>`).join('')}</div>
+    ${tool.teams?`<div class="teams">${tool.teams.map((t,i)=>`<div class="team"><h4>${['🔴','🔵','🟢','🟡','🟣','🟠'][i]} ${i+1}팀 <small class="muted">${t.length}명</small></h4>${t.map(id=>`<div>${esc(stu(id)?.avatar||'')} ${esc(short(stu(id)))}</div>`).join('')}</div>`).join('')}</div>`:`<div class="empty" style="margin-top:12px">팀 수를 고르면 ${n}명을 고르게 섞어서 나눠요.</div>`}`;
+  if(ui.toolTab==='timer'){const tm=tool.tm;body=`<div class="stage-big"><div><div class="timer-digits ${tm.left<=0?'over':''}" id="tm-digits">${tmText()}</div><div class="bar gold" style="margin-top:16px;height:10px"><i id="tm-bar" style="width:${tm.total?Math.max(0,tm.left/tm.total*100):0}%"></i></div></div></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap">${[[30,'30초'],[60,'1분'],[180,'3분'],[300,'5분'],[600,'10분'],[900,'15분']].map(([s,t])=>`<button class="btn" data-act="tm-set" data-v="${s}">${t}</button>`).join('')}</div>
+    <div class="row" style="justify-content:center;margin-top:10px"><label class="f" style="flex:0 1 90px">분<input class="inp" id="tm-m" type="number" min="0" value="${Math.floor(tm.total/60)}"></label><label class="f" style="flex:0 1 90px">초<input class="inp" id="tm-s" type="number" min="0" max="59" value="${tm.total%60}"></label><button class="btn" style="flex:0 0 auto" data-act="tm-custom">설정</button></div>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:14px"><button class="btn lg ${tm.running?'':'primary'}" data-act="tm-toggle">${tm.running?'⏸ 일시정지':'▶ 시작'}</button><button class="btn lg" data-act="tm-reset">↺ 다시</button></div>`}
+  if(ui.toolTab==='wheel'){if(!tool.wheel.items)tool.wheel.items=sorted().map(short);body=`<div class="wheel-wrap"><div><div class="wheel-box"><div class="pointer"></div><canvas id="wheel" width="720" height="720"></canvas></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn lg primary" data-act="wheel-spin">🎯 돌리기</button><div id="wheel-result" style="font-family:var(--f-display);font-size:30px;margin-top:10px;min-height:42px">${esc(tool.wheel.result)}</div></div></div>
+    <div><label class="f">항목 (한 줄에 하나)<textarea class="inp" id="wheel-items" rows="12">${esc(tool.wheel.items.join('\n'))}</textarea></label><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><button class="btn sm" data-act="wheel-apply">항목 적용</button><button class="btn sm" data-act="wheel-students">학생 이름으로</button></div></div></div>`}
+  if(ui.toolTab==='talk'){const ranked=sorted().slice().sort((a,b)=>(S.talk[b.id]||0)-(S.talk[a.id]||0));
+    body=`<div class="ph" style="margin-bottom:10px"><div><p>발표할 때마다 +1. 점수 1점을 골드 ${S.talkGold}로 바꿔 줄 수 있어요.</p></div><div class="actions"><button class="btn gold" data-act="talk-settle">💰 골드로 정산</button><button class="btn" data-act="talk-reset">점수 비우기</button></div></div>
+    <div class="talk">${sorted().map(s=>{const sc=S.talk[s.id]||0;const rk=ranked.findIndex(x=>x.id===s.id);return `<div class="talk-card"><span style="font-size:30px">${esc(s.avatar)}</span><span class="tc-n">${esc(short(s))}${sc&&rk<3?' '+['🥇','🥈','🥉'][rk]:''}</span><span class="tc-s num">${sc}</span><div style="display:flex;gap:6px"><button class="btn sm" data-act="talk" data-sid="${s.id}" data-v="-1" aria-label="1점 빼기">−</button><button class="btn sm primary" data-act="talk" data-sid="${s.id}" data-v="1">+1 잘했어요</button></div></div>`}).join('')}</div>`}
+  if(ui.toolTab==='seat'){const order=seatOrder();const cols=S.seats.cols;
+    body=`<div class="row" style="margin-bottom:12px"><label class="f" style="flex:0 1 110px">한 줄 자리 수<input class="inp" id="seat-cols" type="number" min="2" max="10" value="${cols}"></label><button class="btn" style="flex:0 0 auto" data-act="seat-cols">적용</button><button class="btn primary" style="flex:0 0 auto" data-act="seat-shuffle">🔀 자리 섞기</button><span class="hint" style="flex:2 1 200px">두 자리를 차례로 누르면 서로 바뀌어요.</span></div>
+    <div class="seats-wrap"><div class="board">칠판</div><div class="seats" style="grid-template-columns:repeat(${cols},104px)">${order.map((id,i)=>{const s=stu(id);return `<button class="seat ${s?'':'emptyseat'} ${tool.seatSel===i?'sel':''}" data-act="seat" data-v="${i}">${s?`<span class="sa">${esc(s.avatar)}</span>${esc(short(s))}`:'빈자리'}</button>`}).join('')}</div></div>`}
+  return `<section class="panel"><div class="ph"><div><h2>클래스 툴</h2><p>수업 시간에 바로 쓰는 도구 모음이에요.</p></div></div>
+    <div class="subtabs" role="tablist">${tabs.map(([k,t])=>`<button role="tab" aria-selected="${ui.toolTab===k}" data-act="tool-tab" data-v="${k}">${t}</button>`).join('')}</div>${body}</section>`};
+AFTER.tools=()=>{if(ui.toolTab==='wheel')drawWheel()};
+function doPick(k){if(tool.pickBusy)return;let pool=S.students.filter(s=>!tool.picked.includes(s.id));if(!pool.length){toast('모두 뽑혔어요. 처음부터를 눌러 주세요');return}
+  k=Math.min(k,pool.length);const chosen=shuffle(pool).slice(0,k).map(s=>s.id);const stage=document.getElementById('pick-stage');tool.pickBusy=true;
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;let i=0;
+  const iv=setInterval(()=>{const r=shuffle(pool).slice(0,k);stage.innerHTML=`<div class="pick-result">${r.map(s=>`<span>${esc(s.avatar)} ${esc(short(s))}</span>`).join('')}</div>`;if(++i>14){clearInterval(iv);finish()}},reduce?1:80);
+  function finish(){tool.pickBusy=false;tool.last=chosen;tool.picked.push(...chosen);render()}}
+function makeTeams(k){const arr=shuffle(S.students.map(s=>s.id));const t=Array.from({length:k},()=>[]);arr.forEach((id,i)=>t[i%k].push(id));tool.teams=t;render()}
+function tmText(){const l=Math.max(0,Math.ceil(tool.tm.left));return pad(Math.floor(l/60))+':'+pad(l%60)}
+function tmTick(){const tm=tool.tm;tm.left=(tm.end-Date.now())/1000;
+  if(tm.left<=0){tm.left=0;tm.running=false;clearInterval(tm.iv);beep();if(view==='tools'&&ui.toolTab==='timer')render();toast('⏰ 시간 끝!');return}
+  const d=document.getElementById('tm-digits'),b=document.getElementById('tm-bar');if(d)d.textContent=tmText();if(b)b.style.width=(tm.left/tm.total*100)+'%'}
+function beep(){if(!audioCtx)return;const t=audioCtx.currentTime;[0,0.35,0.7].forEach(o=>{const os=audioCtx.createOscillator(),g=audioCtx.createGain();os.frequency.value=880;os.connect(g);g.connect(audioCtx.destination);g.gain.setValueAtTime(.25,t+o);g.gain.exponentialRampToValueAtTime(.001,t+o+.3);os.start(t+o);os.stop(t+o+.3)})}
+function wheelColors(){const cs=getComputedStyle(document.documentElement);return['--exp','--accent','--good','--g4','--bad','--g5','--g3','--g2'].map(v=>cs.getPropertyValue(v).trim()||'#888')}
+function drawWheel(){const c=document.getElementById('wheel');if(!c)return;const x=c.getContext('2d');const items=tool.wheel.items.length?tool.wheel.items:['항목을 넣어 주세요'];const n=items.length,R=350,cx=360,cy=360,seg=Math.PI*2/n,cols=wheelColors();
+  x.clearRect(0,0,720,720);items.forEach((it,i)=>{const a=tool.wheel.rot+i*seg;x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,R,a,a+seg);x.closePath();x.fillStyle=cols[i%cols.length];if(n%cols.length===1&&i===n-1&&n>1)x.fillStyle=cols[1];x.fill();x.strokeStyle='rgba(255,255,255,.7)';x.lineWidth=3;x.stroke();
+    x.save();x.translate(cx,cy);x.rotate(a+seg/2);x.textAlign='right';x.fillStyle='#fff';x.font=`${n>20?22:30}px Jua, sans-serif`;x.fillText(String(it).slice(0,10),R-22,10);x.restore()});
+  x.beginPath();x.arc(cx,cy,36,0,Math.PI*2);x.fillStyle='#fff';x.fill();x.strokeStyle='rgba(0,0,0,.15)';x.stroke()}
+function spinWheel(){const w=tool.wheel;if(w.spinning||!w.items.length)return;w.spinning=true;w.result='';const res=document.getElementById('wheel-result');if(res)res.textContent='';
+  const start=w.rot,delta=Math.PI*2*(6+Math.random()*4)+Math.random()*Math.PI*2,dur=matchMedia('(prefers-reduced-motion: reduce)').matches?10:4200,t0=performance.now();
+  const step=now=>{const p=Math.min(1,(now-t0)/dur);const e=1-Math.pow(1-p,4);w.rot=start+delta*e;drawWheel();
+    if(p<1)requestAnimationFrame(step);else{w.spinning=false;const n=w.items.length,seg=Math.PI*2/n;let a=(-Math.PI/2-w.rot)%(Math.PI*2);if(a<0)a+=Math.PI*2;w.result='🎉 '+w.items[Math.floor(a/seg)%n];const r=document.getElementById('wheel-result');if(r)r.textContent=w.result}};
+  requestAnimationFrame(step)}
+function seatOrder(){const cols=S.seats.cols;let o=(S.seats.order||[]).filter(id=>id===null||stu(id));S.students.forEach(s=>{if(!o.includes(s.id)){const e=o.indexOf(null);if(e>=0)o[e]=s.id;else o.push(s.id)}});
+  const need=Math.max(cols,Math.ceil(o.length/cols)*cols);while(o.length<need)o.push(null);while(o.length>need&&o[o.length-1]===null)o.pop();S.seats.order=o;return o}
+
+/* ============ 상점 ============ */
+VIEWS.shop=()=>{const unused=S.owned.filter(o=>!o.usedAt);
+  const tabs=`<div class="subtabs" role="tablist">${[['shop','🛍️ 쿠폰 상점'],['use',`🎟️ 쿠폰 사용 (${unused.length})`],['history','📒 구매 기록']].map(([k,t])=>`<button role="tab" aria-selected="${ui.shopTab===k}" data-act="shop-tab" data-v="${k}">${t}</button>`).join('')}</div>`;
+  let body='';
+  if(ui.shopTab==='shop')body=S.coupons.length?`<div class="shop">${S.coupons.map(c=>`<div class="coupon ${c.active?'':'off'}"><div class="cp-emo">${esc(c.emoji||'🎟️')}</div><h4>${esc(c.name)}</h4><div class="hint">${esc(c.desc||'')}</div><div class="price num">${fmt(c.price)} G</div>
+    <div class="hint">${c.stock==null?'재고 무제한':'재고 '+c.stock+'개'} · ${c.active?'판매 중':'판매 중지'}</div>
+    <div style="display:flex;gap:6px;margin-top:auto"><button class="btn sm gold" data-act="buy" data-id="${c.id}" ${!c.active||c.stock===0?'disabled':''}>구매</button><button class="btn sm" data-act="coupon-edit" data-id="${c.id}">수정</button></div></div>`).join('')}</div>`:'<div class="empty">쿠폰이 없어요.</div>';
+  if(ui.shopTab==='use')body=unused.length?`<div class="table-wrap"><table><thead><tr><th>학생</th><th>쿠폰</th><th>구매일</th><th></th></tr></thead><tbody>${unused.map(o=>{const c=S.coupons.find(x=>x.id===o.cid);return `<tr><td>${esc(sname(stu(o.sid)))}</td><td>${esc(c?c.emoji+' '+c.name:'(삭제된 쿠폰)')}</td><td class="num">${timeLabel(o.at)}</td><td class="r"><button class="btn sm primary" data-act="coupon-use" data-id="${o.id}">사용 처리</button></td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">사용하지 않은 쿠폰이 없어요.</div>';
+  if(ui.shopTab==='history'){const h=S.owned.slice().reverse().slice(0,80);body=h.length?`<div class="table-wrap"><table><thead><tr><th>학생</th><th>쿠폰</th><th class="r">가격</th><th>구매</th><th>사용</th></tr></thead><tbody>${h.map(o=>{const c=S.coupons.find(x=>x.id===o.cid);return `<tr><td>${esc(sname(stu(o.sid)))}</td><td>${esc(c?c.name:'(삭제)')}</td><td class="r num">${fmt(o.price)}</td><td class="num">${timeLabel(o.at)}</td><td class="num">${o.usedAt?timeLabel(o.usedAt):'—'}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">구매 기록이 없어요.</div>'}
+  return `<section class="panel"><div class="ph"><div><h2>학급 활동 상점</h2><p>모은 골드로 학급 쿠폰을 사요. 쿠폰을 쓸 때 '사용 처리'를 눌러 주세요.</p></div><div class="actions"><button class="btn primary" data-act="coupon-edit">+ 새 쿠폰</button></div></div>${tabs}${body}</section>`};
+async function buyCoupon(cid){const c=S.coupons.find(x=>x.id===cid);if(!c)return;const note={},dis=[];S.students.forEach(s=>{note[s.id]=fmt(s.gold)+'G';if(s.gold<c.price)dis.push(s.id)});
+  const sids=await pickStudents({title:`${c.emoji} ${c.name} 구매`,sub:`가격 ${fmt(c.price)}G · 골드가 모자란 학생은 고를 수 없어요`,okText:'구매',single:true,disabled:dis,note});if(!sids||!sids.length)return;
+  const s=stu(sids[0]);if(s.gold<c.price)return;if(c.stock===0){toast('재고가 없어요');return}
+  s.gold-=c.price;if(c.stock!=null)c.stock--;S.owned.push({id:uid(),sid:s.id,cid,price:c.price,at:Date.now(),usedAt:null});addLog(`${short(s)} · 쿠폰 '${c.name}' 구매 (골드 -${c.price})`,[s.id]);toast(`${short(s)} 학생이 '${c.name}'을(를) 샀어요`);commit()}
+function useCoupon(oid){const o=S.owned.find(x=>x.id===oid);if(!o)return;o.usedAt=Date.now();const c=S.coupons.find(x=>x.id===o.cid);addLog(`${short(stu(o.sid))} · 쿠폰 '${c?c.name:''}' 사용`,[o.sid]);toast('쿠폰을 사용 처리했어요');commit()}
+function couponForm(cid){const c=cid?S.coupons.find(x=>x.id===cid):{emoji:'🎟️',name:'',desc:'',price:1000,stock:10,active:true};
+  openModal(`<h3>${cid?'쿠폰 수정':'새 쿠폰'}</h3><div class="row"><label class="f" style="flex:0 1 80px">아이콘<input class="inp" id="cp-emo" value="${esc(c.emoji)}" maxlength="4"></label><label class="f" style="flex:2 1 200px">쿠폰 이름<input class="inp" id="cp-name" value="${esc(c.name)}"></label></div>
+    <label class="f">설명<input class="inp" id="cp-desc" value="${esc(c.desc)}"></label>
+    <div class="row"><label class="f">가격(골드)<input class="inp" id="cp-price" type="number" min="0" step="100" value="${c.price}"></label><label class="f">재고 (비우면 무제한)<input class="inp" id="cp-stock" type="number" min="0" value="${c.stock??''}"></label>
+    <label class="f" style="flex-direction:row;align-items:center;gap:8px;padding-bottom:8px"><input type="checkbox" id="cp-act" ${c.active?'checked':''}> 판매 중</label></div>
+    <div class="modal-foot">${cid?'<button class="btn danger" data-del>삭제</button>':''}<span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>저장</button></div>`,
+  {mount:(b,close)=>{b.querySelector('[data-ok]').onclick=()=>{const name=b.querySelector('#cp-name').value.trim();if(!name)return;const st=b.querySelector('#cp-stock').value;
+      const d={name,emoji:b.querySelector('#cp-emo').value.trim()||'🎟️',desc:b.querySelector('#cp-desc').value.trim(),price:+b.querySelector('#cp-price').value||0,stock:st===''?null:+st,active:b.querySelector('#cp-act').checked};
+      if(cid)Object.assign(c,d);else S.coupons.push(Object.assign({id:uid()},d));close();commit()};
+    const del=b.querySelector('[data-del]');if(del)del.onclick=async()=>{close();if(await confirmBox(`'${c.name}' 쿠폰을 삭제할까요?`,'삭제',true)){S.coupons=S.coupons.filter(x=>x.id!==cid);commit()}}}});
+}
+
+/* ============ 은행 ============ */
+VIEWS.bank=()=>{const B=S.bank;const now=Date.now();const total=S.students.reduce((a,s)=>a+s.gold,0);const active=B.deposits.filter(d=>!d.claimedAt);const dep=active.reduce((a,d)=>a+d.amount,0);
+  const rows=B.deposits.slice().sort((a,b)=>(!!a.claimedAt-!!b.claimedAt)||b.at-a.at).slice(0,60);
+  return `<section class="panel"><div class="ph"><div><h2>학급 은행</h2><p>골드를 맡기면 정해진 기간 뒤 이자를 받아요. 학생 한 명당 저축 계약은 한 건씩이에요.</p></div><div class="actions"><button class="btn gold" data-act="deposit">💰 저축하기</button></div></div>
+    <div class="stats4"><div class="stat-tile"><b class="num">${fmt(total)}G</b><span>학생 소지금 합계</span></div><div class="stat-tile"><b class="num">${fmt(dep)}G</b><span>저축 예치금 (${active.length}건)</span></div><div class="stat-tile"><b class="num">${fmt(total+dep)}G</b><span>학급 경제 규모</span></div>
+      <div class="stat-tile"><span>이자율·기간</span><div class="row" style="margin-top:4px"><label class="f">이자 %<input class="inp" id="b-rate" type="number" min="1" max="50" value="${B.rate}"></label><label class="f">기간(일)<input class="inp" id="b-days" type="number" min="1" max="60" value="${B.days}"></label></div><button class="btn sm" style="margin-top:6px" data-act="bank-save">저장</button></div></div>
+    ${rows.length?`<div class="table-wrap"><table><thead><tr><th>학생</th><th class="r">원금</th><th class="r">이자</th><th>예치일</th><th>만기일</th><th>상태</th><th></th></tr></thead><tbody>${rows.map(d=>{const due=d.at+d.days*864e5;const ready=!d.claimedAt&&now>=due;const interest=Math.floor(d.amount*d.rate/100);
+      return `<tr><td>${esc(sname(stu(d.sid)))}</td><td class="r num">${fmt(d.amount)}</td><td class="r num">+${fmt(interest)}</td><td class="num">${timeLabel(d.at)}</td><td class="num">${timeLabel(due)}</td>
+      <td>${d.claimedAt?`<span class="status done">${d.early?'중도해지':'수령 완료'}</span>`:ready?'<span class="status ready">만기</span>':'<span class="status run">저축 중</span>'}</td>
+      <td class="r">${d.claimedAt?'':ready?`<button class="btn sm gold" data-act="claim" data-id="${d.id}">이자 받기</button>`:`<button class="btn sm" data-act="claim-now" data-id="${d.id}">지금 만기</button> <button class="btn sm" data-act="cancel-dep" data-id="${d.id}">중도해지</button>`}</td></tr>`}).join('')}</tbody></table></div>`:'<div class="empty">아직 저축한 학생이 없어요.</div>'}
+  </section>`};
+async function deposit(){const B=S.bank;const busy=B.deposits.filter(d=>!d.claimedAt).map(d=>d.sid);const note={};S.students.forEach(s=>note[s.id]=fmt(s.gold)+'G');
+  const sids=await pickStudents({title:'🏦 누가 저축할까요?',sub:`이자 ${B.rate}% · ${B.days}일 뒤 만기 · 이미 저축 중인 학생은 고를 수 없어요`,okText:'다음',single:true,disabled:busy.concat(S.students.filter(s=>s.gold<=0).map(s=>s.id)),note});
+  if(!sids||!sids.length)return;const s=stu(sids[0]);
+  openModal(`<h3>${esc(sname(s))} 저축</h3><p class="muted" style="margin:0">가진 골드 ${fmt(s.gold)}G</p><label class="f">맡길 골드<input class="inp" id="dep-amt" type="number" min="1" max="${s.gold}" value="${Math.floor(s.gold/2)||s.gold}"></label><p class="hint" id="dep-preview" style="margin:0"></p>
+    <div class="modal-foot"><span class="grow"></span><button class="btn" data-close>취소</button><button class="btn gold" data-ok>저축하기</button></div>`,
+  {mount:(b,close)=>{const inp=b.querySelector('#dep-amt');const pv=()=>{const a=Math.min(s.gold,Math.max(0,+inp.value||0));b.querySelector('#dep-preview').textContent=`만기에 ${fmt(a+Math.floor(a*B.rate/100))}G를 돌려받아요 (이자 +${fmt(Math.floor(a*B.rate/100))})`};inp.oninput=pv;pv();
+    b.querySelector('[data-ok]').onclick=()=>{const a=Math.min(s.gold,Math.floor(+inp.value||0));if(a<=0)return;s.gold-=a;B.deposits.push({id:uid(),sid:s.id,amount:a,rate:B.rate,days:B.days,at:Date.now(),claimedAt:null});
+      addLog(`${short(s)} · ${fmt(a)}G 저축 (이자 ${B.rate}%, ${B.days}일)`,[s.id]);toast(`${short(s)} 학생이 ${fmt(a)}G를 저축했어요`);close();commit()}}})}
+function claimDep(id,mode){const d=S.bank.deposits.find(x=>x.id===id);if(!d||d.claimedAt)return;const s=stu(d.sid);const interest=mode==='cancel'?0:Math.floor(d.amount*d.rate/100);
+  if(s)s.gold+=d.amount+interest;d.claimedAt=Date.now();if(mode==='cancel')d.early=true;
+  addLog(`${short(s)} · 저축 ${mode==='cancel'?'중도해지':'만기'} ${fmt(d.amount+interest)}G 수령`,[d.sid]);toast(`${short(s)} 학생에게 ${fmt(d.amount+interest)}G를 돌려줬어요`);commit()}
+
+/* ============ 학생·설정 ============ */
+VIEWS.setup=()=>`<section class="panel"><div class="ph"><div><h2>학생 관리</h2><p>${S.students.length}명 · 학생을 누르면 이름과 캐릭터를 바꿀 수 있어요.</p></div><div class="actions"><button class="btn primary" data-act="add-students">학생 추가</button></div></div>
+  ${S.students.length?`<div class="table-wrap"><table><thead><tr><th>번호</th><th>학생</th><th class="r">레벨</th><th class="r">EXP</th><th class="r">골드</th><th>칭호</th><th></th></tr></thead><tbody>${sorted().map(s=>`<tr><td class="num">${s.no}</td><td>${esc(s.avatar)} ${esc(s.name||'(이름 없음)')}</td><td class="r num">${levelOf(s.exp)}</td><td class="r num">${fmt(s.exp)}</td><td class="r num">${fmt(s.gold)}</td><td>${s.titles.length}개</td><td class="r"><button class="btn sm" data-act="student-edit" data-sid="${s.id}">수정</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">학생이 없어요.</div>'}
+</section>
+<section class="panel"><div class="ph"><div><h2>학급 설정</h2></div></div>
+  <div class="row"><label class="f" style="flex:2 1 220px">학급 이름<input class="inp" id="set-name" value="${esc(S.className)}"></label><label class="f">발표 점수 1점당 골드<input class="inp" id="set-talk" type="number" min="0" value="${S.talkGold}"></label></div>
+  <h4 style="font-size:17px;margin:16px 0 8px">활동 보상</h4>
+  <div class="grid-form">
+    ${[['diary','마음일기'],['letter','감사 편지']].map(([k,t])=>`<label class="f">${t} EXP<input class="inp" data-qr="${k}.exp" type="number" value="${S.questReward[k].exp}"></label><label class="f">${t} 골드<input class="inp" data-qr="${k}.gold" type="number" value="${S.questReward[k].gold}"></label>`).join('')}
+    ${[['done','1인1역 수행'],['bonus','1인1역 보너스'],['penalty','1인1역 패널티']].map(([k,t])=>`<label class="f">${t} EXP<input class="inp" data-rr="${k}.exp" type="number" value="${S.roleReward[k].exp}"></label><label class="f">${t} 골드<input class="inp" data-rr="${k}.gold" type="number" value="${S.roleReward[k].gold}"></label>`).join('')}
+  </div>
+  <div style="margin-top:12px"><button class="btn primary" data-act="settings-save">설정 저장</button></div>
+</section>
+<section class="panel"><div class="ph"><div><h2>데이터</h2><p>${cloud?'데이터는 이 페이지와 함께 클라우드에 저장돼서 다른 컴퓨터에서 열어도 그대로예요.':'지금은 이 브라우저에만 저장돼요. 백업 파일을 가끔 받아 두세요.'}</p></div></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="export">⬇️ 백업 파일 받기</button><button class="btn" data-act="import">⬆️ 백업 불러오기</button><button class="btn gold" data-act="load-preset">기본 세트 추가로 불러오기</button><button class="btn" data-act="season-reset">새 학기 초기화(학생 유지)</button><button class="btn danger" data-act="wipe">모두 지우기</button></div>
+</section>`;
+
+/* ============ 이벤트 ============ */
+document.addEventListener('click',async e=>{
+  const el=e.target.closest('[data-act]');if(!el||el.closest('.overlay'))return;
+  const a=el.dataset.act,v=el.dataset.v,id=el.dataset.id,sid=el.dataset.sid;
+  switch(a){
+    case 'student':studentModal(sid);break;
+    case 'student-edit':editStudent(sid);break;
+    case 'add-students':addStudentsBulk();break;
+    case 'load-preset':{const p=starterPreset();S.cards.push(...p.cards);S.titles.push(...p.titles);S.missions.push(...p.missions);S.coupons.push(...p.coupons);S.roles.push(...p.roles);addLog('기본 세트를 불러왔어요');toast('기본 세트를 불러왔어요');commit();break}
+    case 'edit-notice':openModal(`<h3>📣 알림 메시지</h3><textarea class="inp" id="notice-t" rows="4" placeholder="예: 오늘은 3교시에 강당으로 이동해요!">${esc(S.notice)}</textarea><div class="modal-foot"><button class="btn" data-clear>지우기</button><span class="grow"></span><button class="btn" data-close>취소</button><button class="btn primary" data-ok>게시</button></div>`,
+      {mount:(b,close)=>{b.querySelector('[data-ok]').onclick=()=>{S.notice=b.querySelector('#notice-t').value.trim();close();commit()};b.querySelector('[data-clear]').onclick=()=>{S.notice='';close();commit()}}});break;
+    case 'home-mode':ui.homeMode=v;render();break;
+    case 'quick-card':quickCard();break;
+    case 'quick-gold':quickGold();break;
+    case 'praise-kind':ui.praiseKind=v;ui.praiseCat='전체';render();break;
+    case 'praise-cat':ui.praiseCat=v;render();break;
+    case 'card-give':giveCard(id);break;
+    case 'card-edit':cardForm(id);break;
+    case 'custom-praise':customPraise();break;
+    case 'title-edit':titleForm(id);break;
+    case 'title-give':giveTitle(id);break;
+    case 'title-revoke':revokeTitle(id);break;
+    case 'mission-edit':missionForm(id);break;
+    case 'mission-done':missionDone(id);break;
+    case 'mission-undo':missionUndo(id,sid);break;
+    case 'mission-toggle':{const m=S.missions.find(x=>x.id===id);m.active=!m.active;commit();break}
+    case 'mission-ended':ui.missionShowEnded=!ui.missionShowEnded;render();break;
+    case 'role-day':ui.roleDate=v==='0'?dateKey():shiftDate(ui.roleDate,+v);render();break;
+    case 'role-check':roleCheck(el.dataset.rid,sid,v);break;
+    case 'role-assign':roleAssign(id);break;
+    case 'role-edit':roleForm(id);break;
+    case 'role-random':roleRandom();break;
+    case 'journal-tab':ui.journalTab=v;render();break;
+    case 'journal-day':ui.journalDate=v==='0'?dateKey():shiftDate(ui.journalDate,+v);render();break;
+    case 'diary-save':diarySave(sid,el.closest('.drow'));break;
+    case 'letter-save':letterSave();break;
+    case 'letter-del':if(await confirmBox('이 편지를 삭제할까요?','삭제',true)){S.letters=S.letters.filter(l=>l.id!==id);commit()}break;
+    case 'tool-tab':ui.toolTab=v;render();break;
+    case 'pick':doPick(+v);break;
+    case 'pick-reset':tool.picked=[];tool.last=[];render();break;
+    case 'team':makeTeams(+v);break;
+    case 'tm-set':{const tm=tool.tm;clearInterval(tm.iv);tm.running=false;tm.total=tm.left=+v;render();break}
+    case 'tm-custom':{const tm=tool.tm;clearInterval(tm.iv);tm.running=false;tm.total=tm.left=Math.max(1,(+document.getElementById('tm-m').value||0)*60+(+document.getElementById('tm-s').value||0));render();break}
+    case 'tm-toggle':{const tm=tool.tm;try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume&&audioCtx.resume()}catch(_){}
+      if(tm.running){tm.running=false;clearInterval(tm.iv)}else{if(tm.left<=0)tm.left=tm.total;tm.end=Date.now()+tm.left*1000;tm.running=true;clearInterval(tm.iv);tm.iv=setInterval(tmTick,200)}render();break}
+    case 'tm-reset':{const tm=tool.tm;clearInterval(tm.iv);tm.running=false;tm.left=tm.total;render();break}
+    case 'wheel-spin':spinWheel();break;
+    case 'wheel-apply':tool.wheel.items=document.getElementById('wheel-items').value.split('\n').map(x=>x.trim()).filter(Boolean);tool.wheel.rot=0;drawWheel();break;
+    case 'wheel-students':tool.wheel.items=sorted().map(short);render();break;
+    case 'talk':S.talk[sid]=Math.max(0,(S.talk[sid]||0)+(+v));commit();break;
+    case 'talk-reset':if(await confirmBox('발표 점수를 모두 0으로 비울까요?','비우기',true)){S.talk={};commit()}break;
+    case 'talk-settle':{const ids=Object.keys(S.talk).filter(k=>S.talk[k]>0&&stu(k));if(!ids.length){toast('정산할 점수가 없어요');break}
+      if(!await confirmBox(`발표 점수를 골드로 바꿀까요? (1점 = ${S.talkGold}G) 정산 후 점수는 0이 돼요.`,'정산'))break;
+      ids.forEach(k=>{stu(k).gold+=S.talk[k]*S.talkGold});addLog(`발표 점수 정산: ${ids.map(k=>`${short(stu(k))} ${S.talk[k]*S.talkGold}G`).join(', ')}`,ids);S.talk={};toast('발표 점수를 골드로 정산했어요');commit();break}
+    case 'seat':{const i=+v;if(tool.seatSel===null){tool.seatSel=i;render()}else{const o=S.seats.order;[o[tool.seatSel],o[i]]=[o[i],o[tool.seatSel]];tool.seatSel=null;commit()}break}
+    case 'seat-shuffle':{const ids=shuffle(S.students.map(s=>s.id));S.seats.order=ids;tool.seatSel=null;addLog('자리 배치를 새로 섞었어요');commit();break}
+    case 'seat-cols':S.seats.cols=Math.min(10,Math.max(2,+document.getElementById('seat-cols').value||6));S.seats.order=S.seats.order.filter(Boolean);commit();break;
+    case 'shop-tab':ui.shopTab=v;render();break;
+    case 'buy':buyCoupon(id);break;
+    case 'coupon-use':useCoupon(id);break;
+    case 'coupon-edit':couponForm(id);break;
+    case 'deposit':deposit();break;
+    case 'claim':claimDep(id);break;
+    case 'claim-now':if(await confirmBox('지금 바로 만기 처리하고 이자까지 줄까요?','만기 처리'))claimDep(id);break;
+    case 'cancel-dep':if(await confirmBox('중도해지하면 원금만 돌려줘요. 진행할까요?','중도해지',true))claimDep(id,'cancel');break;
+    case 'bank-save':S.bank.rate=Math.min(50,Math.max(1,+document.getElementById('b-rate').value||10));S.bank.days=Math.min(60,Math.max(1,+document.getElementById('b-days').value||7));toast('이자율을 저장했어요. 새로 맺는 저축부터 적용돼요');commit();break;
+    case 'settings-save':{S.className=document.getElementById('set-name').value.trim()||'우리반';S.talkGold=Math.max(0,+document.getElementById('set-talk').value||0);
+      document.querySelectorAll('[data-qr]').forEach(i=>{const[k,f]=i.dataset.qr.split('.');S.questReward[k][f]=+i.value||0});
+      document.querySelectorAll('[data-rr]').forEach(i=>{const[k,f]=i.dataset.rr.split('.');S.roleReward[k][f]=+i.value||0});toast('설정을 저장했어요');commit();break}
+    case 'export':{const data=JSON.stringify(S,null,1);const fn=`퀘스트보드-백업-${dateKey()}.json`;
+      if(downloads){try{await downloads.save({filename:fn,data});toast('백업 파일을 저장했어요')}catch(err){toast('저장을 취소했거나 저장할 수 없어요')}}
+      else{openModal(`<h3>백업 데이터</h3><p class="hint" style="margin:0">이 화면에서는 파일로 바로 받을 수 없어요. 아래 내용을 전부 복사해서 메모장에 .json으로 저장해 두세요.</p><textarea class="inp" rows="10" readonly id="bk">${esc(data)}</textarea><div class="modal-foot"><button class="btn" data-copy>복사</button><button class="btn primary" data-close>닫기</button></div>`,
+        {mount:b=>b.querySelector('[data-copy]').onclick=()=>{const t=b.querySelector('#bk');navigator.clipboard.writeText(t.value).then(()=>toast('복사했어요'),()=>{t.select();toast('선택된 내용을 Ctrl+C로 복사하세요')})}})}
+      break}
+    case 'import':document.getElementById('import-file').click();break;
+    case 'season-reset':if(await confirmBox('학생 명단만 남기고 EXP·골드·칭호·기록을 모두 0으로 되돌릴까요?','초기화',true)){S.students.forEach(s=>Object.assign(s,{exp:0,gold:0,stats:{},titles:[],equip:null}));S.missions.forEach(m=>m.done={});Object.assign(S,{roleLog:{},owned:[],diary:[],letters:[],talk:{},log:[]});S.bank.deposits=[];commit()}break;
+    case 'wipe':if(await confirmBox('학생과 모든 설정·기록을 지울까요? 되돌릴 수 없어요.','모두 지우기',true)){const keep=S.className;S=emptyState();S.className=keep;commit()}break;
+  }
+});
+document.getElementById('import-file').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=async()=>{try{const d=JSON.parse(r.result);if(!d||!Array.isArray(d.students))throw 0;if(await confirmBox(`백업(학생 ${d.students.length}명)으로 지금 데이터를 바꿀까요?`,'불러오기',true)){S=normalize(d);toast('백업을 불러왔어요');commit()}}catch(_){toast('올바른 백업 파일이 아니에요')}e.target.value=''};r.readAsText(f)});
+
+route();
+connect();
+</script>
+
+</body></html>
